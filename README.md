@@ -1,7 +1,7 @@
 # [ICML 2026] QuITE: Query-Based Irregular Time Series Embedding
 
 ## 🔥News
-[2026-05-25] **QuITE** is accepted by **ICML 2026**!
+[2026-05-01] **QuITE: Query-Based Irregular Time Series Embedding** is accepted by **ICML 2026**!
 
 ## Overview
 
