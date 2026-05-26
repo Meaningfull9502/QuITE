@@ -323,4 +323,11 @@ If you find QuITE useful in your research, please consider citing:
 
 ## 🙏 Acknowledgements
 
-We thank the authors of [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN), [Raindrop](https://github.com/mims-harvard/Raindrop), [Time-Series-Library](https://github.com/thuml/Time-Series-Library), [S-D-Mamba](https://github.com/wzhwzhwzh0921/S-D-Mamba), and [Hi-Patch](https://github.com/qianlima-lab/Hi-Patch) — our data pipelines and baseline implementations build heavily on their excellent open-source releases.
+We thank the authors of the following open-source projects — our data pipelines and baseline implementations build heavily on their excellent releases:
+
+- [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN) — forecasting benchmark and preprocessing pipeline
+- [Raindrop](https://github.com/mims-harvard/Raindrop) — P19 / P12 / PAM classification splits and preprocessing
+- [Time-Series-Library](https://github.com/thuml/Time-Series-Library) — reference implementations of PatchTST / iTransformer / TimeXer / PatchMixer / TMix
+- [S-D-Mamba](https://github.com/wzhwzhwzh0921/S-D-Mamba) — official S-Mamba implementation
+- [Hi-Patch](https://github.com/qianlima-lab/Hi-Patch) — Hi-Patch IMTS baseline
+- [PyOmniTS](https://github.com/Ladbaby/PyOmniTS) — HyperIMTS baseline
