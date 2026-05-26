@@ -209,20 +209,45 @@ All runs use `--lr 1e-3`, `--patience 50` (forecasting), `--epoch 1000 --patienc
 
 ## 🧱 Supported Backbones
 
-Selectable via `--model`. The batch scripts in `jobs/` automatically set `--nlayer` according to paper Appendix B.1; the table below records the recommended values for manual runs.
+Selectable via `--model`. Paper Appendix B.1 fixes each backbone's *standalone* hyperparameters; when integrated with QuITE the **hidden dimension is reduced to 64** to ensure the gains come from QuITE itself rather than added capacity (paper §6.1). The batch scripts in `jobs/` set `--nlayer` automatically; for manual runs use the *QuITE-equipped* columns below.
 
-| Family | `--model` | Token type | `--nlayer` |
-|---|---|---|:---:|
-| **Patch** | `patchtst` | per-patch (channel-independent Transformer) | 3 |
-| **Patch** | `patchmixer` | per-patch (CNN, single-layer) | 1 |
-| **Patch** | `tmix` | per-patch (MLP, TSMixer-style) | 2 |
-| **Variate** | `itransformer` | per-variable (inverted Transformer) | 3 |
-| **Variate** | `s_mamba` | per-variable (bidirectional Mamba) | 2 |
-| **Hybrid** | `timexer` | per-patch + per-variable exogenous | 3 |
+| Family | `--model` | Token type | `--nlayer` *L* | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` | Reference |
+|---|---|---|:---:|:---:|:---:|:---:|---|
+| **Patch** | `patchtst` | per-patch (channel-independent Transformer) | 3 | 4 | 256 | **64** | Nie et al., 2022 |
+| **Patch** | `patchmixer` | per-patch (CNN, single layer) | 1 | — | 256 | **64** | Gong et al., 2023 |
+| **Patch** | `tmix` | per-patch (MLP, TSMixer-style) | 2 | — | 128 | **64** | Chen et al., 2023a |
+| **Variate** | `itransformer` | per-variable (inverted Transformer) | 3 | 4 | 512 | **64** | Liu et al., 2023 |
+| **Variate** | `s_mamba` | per-variable (bidirectional Mamba) | 2 | — | 256 | **64** | Wang et al., 2025 |
+| **Hybrid** | `timexer` | per-patch (endogenous) + per-variable (exogenous) | 3 | 4 | 256 | **64** | Wang et al., 2024 |
 
-> **Note on TimeXer.** As a *hybrid* backbone, TimeXer consumes patch-level tokens together with a variable-level exogenous context — two embeddings are instantiated internally (`patch_embedding` + `variate_embedding`) and the chosen `--mode` is applied to both.
+> **TMix.** TMix is not originally a patch-based model. Following paper Appendix B.1, we replace its input embedding with the PatchTST patch embedding so it is compatible with the patch-token interface.
+>
+> **TimeXer.** As a *hybrid* backbone, TimeXer consumes patch-level tokens together with a variable-level exogenous context — two embeddings are instantiated internally (`patch_embedding` + `variate_embedding`), and the chosen `--mode` is applied to both.
 
-Other QuITE-equipped settings are standardized to `--hid_dim 64`, `--nhead 4` (forecasting), `--nhead 2` (classification) — paper §6.1.
+### Task-level defaults (paper §6.1)
+
+| Setting | Value |
+|---|---|
+| Optimizer | Adam |
+| Learning rate | `1e-3` |
+| Early-stopping patience | 50 (no validation-loss improvement) |
+| Random seeds | `{1, 2, 3, 4, 5}` (5 runs) |
+| Loss | MSE (forecasting) · Cross-Entropy (classification) |
+| `--nhead` (QuITE-equipped) | 4 (forecasting) · 2 (classification) |
+| `--hid_dim` (QuITE-equipped) | 64 |
+| Hardware | NVIDIA RTX A6000 (paper) |
+
+### QuITE++ hyperparameter search (paper §6.1)
+
+QuITE++ is tuned per dataset via grid search:
+
+| Hyperparameter | Search space |
+|---|---|
+| `--hid_dim` | `{32, 64}` |
+| `--nlayer` | `{1, 2, 3}` |
+| `--nhead` | `{1, 2, 4, 8}` |
+
+Defaults in `jobs/run_quite_plus.sh` (`HID=64`, `NLAYER=2`, `NHEAD=4`) sit at the middle of this grid. Override per-dataset via environment variables, e.g. `HID=32 NLAYER=3 bash jobs/run_quite_plus.sh`.
 
 ---
 
