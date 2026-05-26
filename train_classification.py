@@ -4,12 +4,12 @@ Examples:
     # QuITE-PatchTST on P19 (binary classification → AUROC/AUPRC reported)
     python train_classification.py --dataset P19 --gpu 0 --epoch 100 \
         --batch_size 64 --lr 1e-3 --nhead 1 --nlayer 3 --hid_dim 32 \
-        --patch_size 3.75 --stride 3.75 --model patchtst --irr_emb --mode self
+        --patch_size 3.75 --stride 3.75 --model patchtst --irr_emb --mode quite
 
     # QuITE-PatchTST on PAM (8-class activity → Precision/Recall/F1 reported)
     python train_classification.py --dataset PAM --gpu 0 --epoch 100 \
         --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --hid_dim 128 \
-        --patch_size 10 --stride 10 --model patchtst --irr_emb --mode self
+        --patch_size 10 --stride 10 --model patchtst --irr_emb --mode quite
 """
 import os
 import math
@@ -44,8 +44,8 @@ parser.add_argument('--model', type=str, required=True,
                     choices=['patchtst', 'patchmixer', 'tmix', 'itransformer', 's_mamba', 'timexer'],
                     help='MTS backbone')
 parser.add_argument('--mode', type=str, default='False',
-                    choices=['self', 'mean', 'mtand', 'add', 'concat', 'False'],
-                    help="Embedding mode: 'self'=QuITE, 'mean'/'mtand'=baselines (Table 5), "
+                    choices=['quite', 'mean', 'mtand', 'add', 'concat', 'False'],
+                    help="Embedding mode: 'quite'=QuITE (paper main), 'mean'/'mtand'=baselines (Table 5), "
                          "'add'/'concat'=non-irregular baselines, 'False'=vanilla backbone")
 parser.add_argument('--irr_emb', action='store_true',
                     help='Use QuITE-style query-based embedding (paper main method)')

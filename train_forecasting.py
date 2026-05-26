@@ -4,7 +4,7 @@ Examples:
     # QuITE with iTransformer backbone (USHCN)
     python train_forecasting.py --dataset ushcn --history 24 \
         --patch_size 1.5 --stride 1.5 --hid_dim 64 --nhead 4 --nlayer 3 \
-        --irr_emb --model itransformer --mode self --seed 1 --gpu 0
+        --irr_emb --model itransformer --mode quite --seed 1 --gpu 0
 
     # Vanilla iTransformer (no QuITE)
     python train_forecasting.py --dataset ushcn --history 24 \
@@ -52,9 +52,9 @@ parser.add_argument('--quantization', type=float, default=0.0,
 parser.add_argument('--model', type=str, required=True,
                     choices=['patchtst', 'patchmixer', 'tmix', 'itransformer', 's_mamba', 'timexer'],
                     help='MTS backbone')
-parser.add_argument('--mode', type=str, default='self',
-                    choices=['self', 'mean', 'mtand', 'add', 'concat', 'False'],
-                    help="Embedding mode: 'self'=QuITE, 'mean'/'mtand'=baselines (Table 5), "
+parser.add_argument('--mode', type=str, default='quite',
+                    choices=['quite', 'mean', 'mtand', 'add', 'concat', 'False'],
+                    help="Embedding mode: 'quite'=QuITE (paper main), 'mean'/'mtand'=baselines (Table 5), "
                          "'add'/'concat'=non-irregular baselines, 'False'=vanilla backbone")
 parser.add_argument('--irr_emb', action='store_true',
                     help='Use QuITE-style query-based embedding (paper main method)')

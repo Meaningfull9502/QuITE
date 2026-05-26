@@ -99,7 +99,7 @@ After obtaining the datasets and placing them under `../data/`, starting from th
 The single run command for the default horizon is:
 
 ```
-python train_forecasting.py --dataset activity --state def --history 3000 --patience 50 --batch_size 32 --lr 1e-3 --patch_size 750 --stride 750 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode self
+python train_forecasting.py --dataset activity --state def --history 3000 --patience 50 --batch_size 32 --lr 1e-3 --patch_size 750 --stride 750 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode quite
 ```
 
 To evaluate performance across all horizons (6 backbones × 12 (dataset, horizon) settings × 5 seeds), execute:
@@ -113,7 +113,7 @@ bash jobs/run_forecasting.sh
 The single run command for the default horizon is:
 
 ```
-python train_forecasting.py --dataset ushcn --state def --history 24 --pred_window 1 --patience 50 --batch_size 128 --lr 1e-3 --patch_size 1.5 --stride 1.5 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode self
+python train_forecasting.py --dataset ushcn --state def --history 24 --pred_window 1 --patience 50 --batch_size 128 --lr 1e-3 --patch_size 1.5 --stride 1.5 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode quite
 ```
 
 - **PhysioNet**
@@ -121,7 +121,7 @@ python train_forecasting.py --dataset ushcn --state def --history 24 --pred_wind
 The single run command for the default horizon is:
 
 ```
-python train_forecasting.py --dataset physionet --state def --history 24 --patience 50 --batch_size 64 --lr 1e-3 --patch_size 6 --stride 6 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode self
+python train_forecasting.py --dataset physionet --state def --history 24 --patience 50 --batch_size 64 --lr 1e-3 --patch_size 6 --stride 6 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode quite
 ```
 
 - **MIMIC-III**
@@ -129,7 +129,7 @@ python train_forecasting.py --dataset physionet --state def --history 24 --patie
 The single run command for the default horizon is:
 
 ```
-python train_forecasting.py --dataset mimic --state def --history 24 --patience 50 --batch_size 8 --lr 1e-3 --patch_size 12 --stride 12 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode self
+python train_forecasting.py --dataset mimic --state def --history 24 --patience 50 --batch_size 8 --lr 1e-3 --patch_size 12 --stride 12 --nhead 4 --nlayer 3 --hid_dim 64 --seed 1 --gpu 0 --irr_emb --model itransformer --mode quite
 ```
 
 ### QuITE++ (hierarchical forecasting)
@@ -151,19 +151,19 @@ bash jobs/run_quite_plus.sh
 - **P19**
 
 ```
-python train_classification.py --dataset P19 --gpu 0 --epoch 1000 --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --patch_size 3.75 --stride 3.75 --hid_dim 64 --irr_emb --model patchtst --mode self
+python train_classification.py --dataset P19 --gpu 0 --epoch 1000 --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --patch_size 3.75 --stride 3.75 --hid_dim 64 --irr_emb --model patchtst --mode quite
 ```
 
 - **P12**
 
 ```
-python train_classification.py --dataset P12 --gpu 0 --epoch 1000 --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --patch_size 6 --stride 6 --hid_dim 64 --irr_emb --model patchtst --mode self
+python train_classification.py --dataset P12 --gpu 0 --epoch 1000 --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --patch_size 6 --stride 6 --hid_dim 64 --irr_emb --model patchtst --mode quite
 ```
 
 - **PAM**
 
 ```
-python train_classification.py --dataset PAM --gpu 0 --epoch 1000 --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --patch_size 10 --stride 10 --hid_dim 64 --irr_emb --model patchtst --mode self
+python train_classification.py --dataset PAM --gpu 0 --epoch 1000 --batch_size 64 --lr 1e-3 --nhead 2 --nlayer 3 --patch_size 10 --stride 10 --hid_dim 64 --irr_emb --model patchtst --mode quite
 ```
 
 To evaluate performance across all 6 backbones × 3 datasets, execute:
@@ -172,20 +172,35 @@ To evaluate performance across all 6 backbones × 3 datasets, execute:
 bash jobs/run_classification.sh
 ```
 
-### Backbone-specific layer count
+### Supported backbones (`--model`)
 
-Per paper Appendix B.1, the number of encoder layers differs by backbone (the
-batch scripts in `jobs/` handle this automatically; if you launch a single run
-manually, set `--nlayer` accordingly):
+| Family | `--model` | Token | `--nlayer` (paper Appendix B.1) |
+|---|---|---|---|
+| Patch | `patchtst` | per-patch (channel-independent Transformer) | 3 |
+| Patch | `patchmixer` | per-patch (CNN, single-layer) | 1 |
+| Patch | `tmix` | per-patch (MLP, TSMixer-style) | 2 |
+| Variate | `itransformer` | per-variable (inverted Transformer) | 3 |
+| Variate | `s_mamba` | per-variable (bidirectional Mamba) | 2 |
+| **Hybrid** | `timexer` | per-patch (endogenous) + per-variable (exogenous) | 3 |
 
-| Backbone | `--nlayer` |
-|---|---|
-| PatchTST / iTransformer / TimeXer | 3 |
-| TMix / S-Mamba | 2 |
-| PatchMixer | 1 (single-layer) |
+`timexer` is the **hybrid** backbone that consumes patch-level tokens
+together with a variable-level exogenous context, so two embeddings are
+instantiated internally (`patch_embedding` + `variate_embedding`). The
+embedding mode (`--mode`) is applied identically to both.
 
 Other QuITE-equipped settings are standardized to `--hid_dim 64` and `--nhead 4`
-for forecasting and `--nhead 2` for classification (paper §6.1).
+for forecasting and `--nhead 2` for classification (paper §6.1). The batch
+scripts in `jobs/` set the per-backbone `--nlayer` automatically; if you launch
+a single run manually, set `--nlayer` according to the table above.
+
+#### TimeXer single-run example
+
+```
+python train_forecasting.py --dataset physionet --history 24 --patch_size 6 --stride 6 \
+    --batch_size 64 --lr 1e-3 --patience 50 \
+    --hid_dim 64 --nhead 4 --nlayer 3 \
+    --seed 1 --gpu 0 --irr_emb --model timexer --mode quite
+```
 
 Algorithms can be run with named arguments, which allow the use of different settings from the paper:
 
@@ -205,13 +220,13 @@ Algorithms can be run with named arguments, which allow the use of different set
 - *seed*: Random seed.
 - *model*: Choose which MTS backbone to use. Options: [patchtst, patchmixer, tmix, itransformer, s_mamba, timexer].
 - *mode*: Embedding mode.
-  - `self`  — **QuITE** (paper main method)
-  - `mean`  — Mean Pooling baseline (Table 5)
-  - `mtand` — mTAND baseline (Table 5)
-  - `add`   — value + time embedding (Table 5)
-  - `concat`— value || time embedding (Table 5)
-  - `False` — vanilla backbone embedding (no time conditioning)
-- *irr_emb*: Use QuITE-style query-based irregular embedding (paper main method).
+  - `quite` — **QuITE** (paper main method, Eq. 5-13). Requires `--irr_emb`.
+  - `mean`  — Mean Pooling baseline (Table 5). Requires `--irr_emb`.
+  - `mtand` — mTAND baseline (Table 5). Requires `--irr_emb`.
+  - `add`   — value + time embedding (Table 5). Use *without* `--irr_emb`.
+  - `concat`— value ‖ time embedding (Table 5). Use *without* `--irr_emb`.
+  - `False` — vanilla backbone embedding (no time conditioning). Use *without* `--irr_emb`.
+- *irr_emb*: Enable QuITE-style query-based irregular embedding. Pair with `--mode {quite, mean, mtand}`.
 
 ## Citation
 

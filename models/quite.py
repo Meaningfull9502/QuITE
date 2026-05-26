@@ -2,7 +2,7 @@
 
 The same `Model` class handles both forecasting and classification, dispatched
 by `args.task`. Embedding logic is delegated to `models.embeddings.get_embedding`
-so that 'self' / 'mean' / 'mtand' / 'add' / 'concat' / vanilla baselines are
+so that 'quite' / 'mean' / 'mtand' / 'add' / 'concat' / vanilla baselines are
 each a single self-contained module.
 
 Backbones (selected by `args.model`):

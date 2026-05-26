@@ -28,7 +28,7 @@ run() {
     nlayer=$(nlayer_for "$model")
     python train_classification.py \
         --model "$model" --hid_dim $HID --nhead $NHEAD --nlayer "$nlayer" \
-        --epoch 1000 --batch_size 64 --lr 1e-3 --gpu $GPU --irr_emb --mode self "$@"
+        --epoch 1000 --batch_size 64 --lr 1e-3 --gpu $GPU --irr_emb --mode quite "$@"
 }
 
 for model in $MODELS; do

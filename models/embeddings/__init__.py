@@ -2,7 +2,7 @@
 
 Available modes (selected via args.mode + args.irr_emb):
     irr_emb=True
-      - 'self'  : QuITEEmbedding         (paper main method, Eq. 5-13)
+      - 'quite' : QuITEEmbedding         (paper main method, Eq. 5-13)
       - 'mean'  : MeanPoolEmbedding      (Table 5 baseline)
       - 'mtand' : MTANDEmbedding         (Table 5 baseline)
     irr_emb=False
@@ -28,7 +28,7 @@ def get_embedding(args, family):
     family: 'variate' | 'patch'
     """
     if args.irr_emb:
-        if args.mode == 'self':
+        if args.mode == 'quite':
             return QuITEEmbedding(args, family=family)
         if args.mode == 'mean':
             return MeanPoolEmbedding(args, family=family)

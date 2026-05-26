@@ -28,7 +28,7 @@ run() {
     nlayer=$(nlayer_for "$model")
     python train_forecasting.py \
         --model "$model" --hid_dim $HID --nhead $NHEAD --nlayer "$nlayer" \
-        --patience 50 --lr 1e-3 --gpu $GPU --irr_emb --mode self "$@"
+        --patience 50 --lr 1e-3 --gpu $GPU --irr_emb --mode quite "$@"
 }
 
 for model in $MODELS; do

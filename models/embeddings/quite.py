@@ -1,4 +1,4 @@
-"""QuITE (mode='self'): query-based irregular time series embedding (paper main method).
+"""QuITE (mode='quite'): query-based irregular time series embedding (paper main method).
 
 For each "structured target" (variable or patch), a learnable query token is
 prepended to the irregular observation tokens and aggregated via a single
