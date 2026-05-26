@@ -213,11 +213,11 @@ Selectable via `--model`. Paper Appendix B.1 fixes each backbone's *standalone* 
 
 | Family | `--model` | Token type | `--nlayer` *L* | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` | Reference |
 |---|---|---|:---:|:---:|:---:|:---:|---|
-| **Patch** | `patchtst` | per-patch (channel-independent Transformer) | 3 | 4 | 256 | **64** | Nie et al., 2022 |
-| **Patch** | `patchmixer` | per-patch (CNN, single layer) | 1 | — | 256 | **64** | Gong et al., 2023 |
-| **Patch** | `tmix` | per-patch (MLP, TSMixer-style) | 2 | — | 128 | **64** | Chen et al., 2023a |
-| **Variate** | `itransformer` | per-variable (inverted Transformer) | 3 | 4 | 512 | **64** | Liu et al., 2023 |
-| **Variate** | `s_mamba` | per-variable (bidirectional Mamba) | 2 | — | 256 | **64** | Wang et al., 2025 |
+| **Patch** | `patchtst` | per-patch | 3 | 4 | 256 | **64** | Nie et al., 2022 |
+| **Patch** | `patchmixer` | per-patch | 1 | — | 256 | **64** | Gong et al., 2023 |
+| **Patch** | `tmix` | per-patch | 2 | — | 128 | **64** | Chen et al., 2023a |
+| **Variate** | `itransformer` | per-variable | 3 | 4 | 512 | **64** | Liu et al., 2023 |
+| **Variate** | `s_mamba` | per-variable | 2 | — | 256 | **64** | Wang et al., 2025 |
 | **Hybrid** | `timexer` | per-patch (endogenous) + per-variable (exogenous) | 3 | 4 | 256 | **64** | Wang et al., 2024 |
 
 > **TMix.** TMix is not originally a patch-based model. Following paper Appendix B.1, we replace its input embedding with the PatchTST patch embedding so it is compatible with the patch-token interface.
@@ -233,9 +233,9 @@ Selectable via `--model`. Paper Appendix B.1 fixes each backbone's *standalone* 
 | Early-stopping patience | 50 (no validation-loss improvement) |
 | Random seeds | `{1, 2, 3, 4, 5}` (5 runs) |
 | Loss | MSE (forecasting) · Cross-Entropy (classification) |
-| `--nhead` (QuITE-equipped) | 4 (forecasting) · 2 (classification) |
+| `--nhead` (QuITE-equipped) | 4 |
 | `--hid_dim` (QuITE-equipped) | 64 |
-| Hardware | NVIDIA RTX A6000 (paper) |
+| Hardware | NVIDIA RTX A6000 |
 
 ### QuITE++ hyperparameter search (paper §6.1)
 
