@@ -11,7 +11,9 @@
 
 A plug-and-play **input-embedding** module that lets any standard MTS backbone — PatchTST, PatchMixer, TMix, iTransformer, S-Mamba, TimeXer — handle **Irregular Multivariate Time Series (IMTS)** without architectural changes or artificial value generation.
 
-[Overview](#-overview) · [Model](#-model) · [Datasets](#-datasets) · [Install](#-installation) · [Quick Start](#-quick-start) · [Reproduce](#-reproducing-paper-results) · [Arguments](#-arguments) · [Citation](#-citation)
+📄 [**Paper (OpenReview)**](https://openreview.net/forum?id=ILQGHFvEoo) · 💻 [**Code**](https://github.com/Meaningfull9502/QuITE) · 📜 [**Citation**](#-citation)
+
+[Overview](#-overview) · [Model](#-model) · [Datasets](#-datasets) · [Install](#-installation) · [Quick Start](#-quick-start) · [Reproduce](#-reproducing-paper-results) · [Arguments](#-arguments)
 
 </div>
 
@@ -305,16 +307,15 @@ QuITE/
 
 ## 📜 Citation
 
+If you find QuITE useful in your research, please consider citing:
+
 ```bibtex
 @inproceedings{lim2026quite,
-  title     = {QuITE: Query-Based Irregular Time Series Embedding},
+  title     = {Qu{ITE}: Query-based Irregular Time-series Embedding},
   author    = {Lim, JungHoon},
-  booktitle = {Proceedings of the 43rd International Conference on Machine Learning},
-  series    = {Proceedings of Machine Learning Research},
-  volume    = {306},
-  address   = {Seoul, South Korea},
-  publisher = {PMLR},
-  year      = {2026}
+  booktitle = {Forty-third International Conference on Machine Learning},
+  year      = {2026},
+  url       = {https://openreview.net/forum?id=ILQGHFvEoo}
 }
 ```
 
