@@ -17,21 +17,27 @@ We also introduce **QuITE++**, a hierarchical extension that stacks query-based 
 - Consistent gains on 4 forecasting (Human Activity / USHCN / PhysioNet / MIMIC-III) and 3 classification (P12 / P19 / PAM) benchmarks across 6 MTS backbones.
 
 <p align="center">
-  <img src="figs/fig1_effectiveness.png" width="780"/>
+  <img src="figs/forecasting.png" width="780"/>
   <br/>
-  <em>Figure 1. Effectiveness of QuITE. QuITE consistently improves performance across diverse datasets and backbone architectures. Values are averaged over all datasets.</em>
+  <em>Figure 1 (a). Effectiveness of QuITE on forecasting. QuITE consistently improves all six MTS backbones across diverse datasets (values averaged over all datasets).</em>
+</p>
+
+<p align="center">
+  <img src="figs/classification.png" width="780"/>
+  <br/>
+  <em>Figure 1 (b). Effectiveness of QuITE on classification. QuITE consistently improves all six MTS backbones across diverse datasets (values averaged over all datasets).</em>
 </p>
 
 ## The model framework of QuITE
 
 <p align="center">
-  <img src="figs/fig2_quite_framework.png" width="900"/>
+  <img src="figs/QuITE.png" width="900"/>
   <br/>
-  <em>Figure 2. Overall Framework of QuITE. A plug-and-play embedding module for IMTS: learnable query tokens aggregate irregular observations through a single self-attention layer and produce structured observation-summary tokens.</em>
+  <em>Figure 2. Overall Framework of QuITE. A plug-and-play embedding module for IMTS: learnable query tokens aggregate irregular observations through a single self-attention layer and produce structured observation-summary tokens. This example illustrates variable-level aggregation.</em>
 </p>
 
 <p align="center">
-  <img src="figs/fig3_quite_plus_architecture.png" width="900"/>
+  <img src="figs/model.jpg" width="900"/>
   <br/>
   <em>Figure 3. Overall Architecture of QuITE++. A hierarchical encoder that models intra-variable patch-level temporal dependencies and inter-variable interactions via learnable query tokens.</em>
 </p>
