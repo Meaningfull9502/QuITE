@@ -1,6 +1,6 @@
 <div align="center">
 
-# QuITE: Query-Based Irregular Time Series Embedding
+# [ICML 2026] QuITE: Query-Based Irregular Time Series Embedding
 
 [![Conference](https://img.shields.io/badge/ICML-2026-1f6feb?style=flat-square)](https://icml.cc/Conferences/2026)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
