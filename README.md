@@ -28,7 +28,7 @@ A plug-and-play **input-embedding** module that lets any standard MTS backbone �
 Irregular Multivariate Time Series (IMTS) are common in healthcare, industrial monitoring, and climatology, yet they break the uniform-sampling assumption baked into standard MTS embeddings. We address this at the **input-embedding** stage.
 
 - **QuITE** *(paper §4)* — a plug-and-play module. A small set of learnable **query tokens** aggregates irregular observations through a single masked self-attention layer.
-- **QuITE++** *(paper §5)* — a hierarchical extension: query-based patch embedding → patch-level self-attention → variable-level self-attention → cross-attention decoder over future-time queries.
+- **QuITE++** *(paper §5)* — a hierarchical extension: query-based patch embedding -> patch-level self-attention -> variable-level self-attention -> cross-attention decoder over future-time queries.
 
 Across **7 benchmarks** and **6 MTS backbones**, plugging QuITE in yields average relative gains of **up to 54.7% in forecasting** and **up to 15.8% in classification**; QuITE++ achieves the **best performance on 20 of 24 forecasting settings** (paper Tables 2-4).
 
