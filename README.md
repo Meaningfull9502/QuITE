@@ -7,30 +7,30 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**Official PyTorch implementation** of  *QuITE: Query-Based Irregular Time Series Embedding* (ICML 2026).
+**Official PyTorch implementation** of *QuITE: Query-Based Irregular Time Series Embedding* (ICML 2026).
 
 A plug-and-play **input-embedding** module that lets any standard MTS backbone — PatchTST, PatchMixer, TMix, iTransformer, S-Mamba, TimeXer — handle **Irregular Multivariate Time Series (IMTS)** without architectural changes or artificial value generation.
 
-📄 [**Paper (arXiv)**](https://arxiv.org/abs/2605.28166) · 📑 [**OpenReview**](https://openreview.net/forum?id=ILQGHFvEoo) · 💻 [**Code**](https://github.com/Meaningfull9502/QuITE) · 📜 [**Citation**](#-citation)
+[Paper (arXiv)](https://arxiv.org/abs/2605.28166) | [OpenReview](https://openreview.net/forum?id=ILQGHFvEoo) | [Code](https://github.com/Meaningfull9502/QuITE) | [Citation](#citation)
 
 </div>
 
 ---
 
-## 🔥 News
+## News
 
-- **2026-05-01** — **QuITE** is accepted by **ICML 2026** 🎉
+- **2026-05-01** — *QuITE* is accepted by **ICML 2026**.
 
 ---
 
-## 🧐 Overview
+## Overview
 
 Irregular Multivariate Time Series (IMTS) are common in healthcare, industrial monitoring, and climatology, yet they break the uniform-sampling assumption baked into standard MTS embeddings. We address this at the **input-embedding** stage.
 
 - **QuITE** *(paper §4)* — a plug-and-play module. A small set of learnable **query tokens** aggregates irregular observations through a single masked self-attention layer.
 - **QuITE++** *(paper §5)* — a hierarchical extension: query-based patch embedding → patch-level self-attention → variable-level self-attention → cross-attention decoder over future-time queries.
 
-Across **7 benchmarks × 6 MTS backbones**, plugging QuITE in yields average relative gains of **up to 54.7 % in forecasting** and **up to 15.8 % in classification**; QuITE++ achieves the **best performance on 20 / 24 forecasting settings** (paper Tables 2-4).
+Across **7 benchmarks** and **6 MTS backbones**, plugging QuITE in yields average relative gains of **up to 54.7% in forecasting** and **up to 15.8% in classification**; QuITE++ achieves the **best performance on 20 of 24 forecasting settings** (paper Tables 2-4).
 
 <p align="center">
   <img src="figs/forecasting.png" width="780"/>
@@ -46,7 +46,7 @@ Across **7 benchmarks × 6 MTS backbones**, plugging QuITE in yields average rel
 
 ---
 
-## 🧠 Model
+## Model
 
 <p align="center">
   <img src="figs/QuITE.png" width="900"/>
@@ -62,37 +62,37 @@ Across **7 benchmarks × 6 MTS backbones**, plugging QuITE in yields average rel
 
 ---
 
-## 📊 Datasets
+## Datasets
 
 We use **4 forecasting** + **3 classification** benchmarks, following [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN) for forecasting and [Raindrop](https://github.com/mims-harvard/Raindrop) for classification preprocessing. Place all data under `../data/` (sibling of this repository).
 
 ### Forecasting (paper Appendix A.1)
 
-| Dataset | # Samples | # Vars | Avg. Length | Missing |
-|---|---:|---:|---:|---:|
-| Human Activity | 5,400  | 12 | 120 | 75.0 % |
-| USHCN          | 26,736 |  5 | 163 | 77.9 % |
-| PhysioNet      | 12,000 | 36 |  74 | 88.4 % |
-| MIMIC-III      | 23,457 | 96 |  46 | 96.7 % |
+| Dataset        | Samples | Variables | Avg. Length | Missing |
+| -------------- | ------: | --------: | ----------: | ------: |
+| Human Activity |   5,400 |        12 |         120 |  75.0 % |
+| USHCN          |  26,736 |         5 |         163 |  77.9 % |
+| PhysioNet      |  12,000 |        36 |          74 |  88.4 % |
+| MIMIC-III      |  23,457 |        96 |          46 |  96.7 % |
 
 ### Classification (paper Appendix A.2)
 
-| Dataset | # Samples | # Vars | # Classes | Missing |
-|---|---:|---:|---:|---:|
-| P19 | 38,803 | 34 | 2 (binary)   | 94.9 % |
-| P12 | 11,988 | 36 | 2 (binary)   | 88.4 % |
-| PAM | 5,333  | 17 | 8 (activity) | 60.0 % |
+| Dataset | Samples | Variables |    Classes | Missing |
+| ------- | ------: | --------: | ---------: | ------: |
+| P19     |  38,803 |        34 | 2 (binary) |  94.9 % |
+| P12     |  11,988 |        36 | 2 (binary) |  88.4 % |
+| PAM     |   5,333 |        17 | 8 classes  |  60.0 % |
 
 ### Acquisition
 
-- **PhysioNet / Human Activity** — auto-downloaded by the code.
-- **USHCN** — use the preprocessed `small_chunked_sporadic.csv` from [GRU-ODE-Bayes](https://github.com/edebrouwer/gru_ode_bayes).
+- **PhysioNet, Human Activity** — auto-downloaded by the code.
+- **USHCN** — use `small_chunked_sporadic.csv` from [GRU-ODE-Bayes](https://github.com/edebrouwer/gru_ode_bayes).
 - **MIMIC-III** — request raw data via [PhysioNet](https://physionet.org/content/mimiciii/1.4/) (credentialed), then run the [Neural Flows preprocessing](https://github.com/mbilos/neural-flows-experiments/blob/master/nfe/experiments/gru_ode_bayes/data_preproc/mimic_prep.ipynb).
-- **P12 / P19 / PAM** — use the Raindrop-processed splits ([P19](https://doi.org/10.6084/m9.figshare.19514338.v1), [P12](https://doi.org/10.6084/m9.figshare.19514341.v1)).
+- **P12, P19, PAM** — use the Raindrop-processed splits ([P19](https://doi.org/10.6084/m9.figshare.19514338.v1), [P12](https://doi.org/10.6084/m9.figshare.19514341.v1)).
 
 ---
 
-## 🛠 Installation
+## Installation
 
 Tested on **Python 3.10+** and **PyTorch 2.0+**.
 
@@ -100,15 +100,15 @@ Tested on **Python 3.10+** and **PyTorch 2.0+**.
 git clone https://github.com/Meaningfull9502/QuITE.git
 cd QuITE
 pip install -r requirements.txt
-pip install mamba-ssm  # only required for the S-Mamba backbone
+pip install mamba-ssm   # only required for the S-Mamba backbone
 ```
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
-# QuITE + iTransformer on PhysioNet (forecasting, 24 → 24)
+# QuITE + iTransformer on PhysioNet (forecasting, 24 -> 24)
 python train_forecasting.py --dataset physionet --history 24 \
     --patch_size 6 --stride 6 --hid_dim 64 --nhead 4 --nlayer 3 \
     --batch_size 64 --lr 1e-3 --seed 1 --gpu 0 \
@@ -134,74 +134,71 @@ python train_classification.py --dataset P19 \
 
 ---
 
-## 🔁 Reproducing Paper Results
+## Reproducing Paper Results
 
 ```bash
-bash jobs/run_forecasting.sh     # Table 2  — 6 backbones × 12 (dataset, horizon) × 5 seeds
-bash jobs/run_quite_plus.sh      # Table 4  — QuITE++ on 12 settings × 5 seeds
-bash jobs/run_classification.sh  # Table 3  — 6 backbones × 3 datasets
+bash jobs/run_forecasting.sh      # Table 2  -- 6 backbones x 12 (dataset, horizon) x 5 seeds
+bash jobs/run_quite_plus.sh       # Table 4  -- QuITE++ on 12 settings x 5 seeds
+bash jobs/run_classification.sh   # Table 3  -- 6 backbones x 3 datasets
 ```
 
-All runs use Adam, `lr=1e-3`, **patience=50**, **seeds {1..5}**, **MSE loss** (forecasting), **CE loss** (classification) — paper §6.1.
+All runs use Adam, `lr = 1e-3`, **patience = 50**, **seeds {1, 2, 3, 4, 5}**, **MSE loss** (forecasting), **Cross-Entropy loss** (classification) — paper §6.1.
 
 ---
 
-## 🧱 Supported Backbones
+## Supported Backbones
 
-> 🔑 **Key rule.** When QuITE is plugged into any of the six MTS backbones, we fix
-> `--hid_dim 64` and `--nhead 4` (paper §6.1). This isolates the gains to QuITE
-> itself rather than to extra backbone capacity. Per-backbone `--nlayer` follows
-> paper Appendix B.1 and is set automatically by `jobs/*.sh`. `--nhead` is N/A
-> for the non-attention backbones (PatchMixer / TMix / S-Mamba).
+> **Key rule.** When QuITE is plugged into any of the six MTS backbones, we fix `--hid_dim 64` and `--nhead 4` (paper §6.1) so that the gains come from QuITE itself rather than added backbone capacity.
+> Per-backbone `--nlayer` follows paper Appendix B.1 and is set automatically by `jobs/*.sh`. `--nhead` is not applicable to the non-attention backbones (PatchMixer, TMix, S-Mamba).
 
-| Family | `--model` | Token | `--nlayer` | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` |
-|---|---|---|:---:|:---:|:---:|:---:|
-| **Patch** | `patchtst` | per-patch (Transformer) | 3 | 4 | 256 | **64** |
-| **Patch** | `patchmixer` | per-patch (CNN, single-layer) | 1 | — | 256 | **64** |
-| **Patch** | `tmix` | per-patch (MLP, TSMixer-style) | 2 | — | 128 | **64** |
-| **Variate** | `itransformer` | per-variable (inverted Transformer) | 3 | 4 | 512 | **64** |
-| **Variate** | `s_mamba` | per-variable (bidirectional Mamba) | 2 | — | 256 | **64** |
-| **Hybrid** | `timexer` | per-patch + per-variable exogenous | 3 | 4 | 256 | **64** |
+| Family  | `--model`      | Token type                                  | `--nlayer` | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` |
+| ------- | -------------- | ------------------------------------------- | :--------: | :-------: | :--------------------: | :------------------------: |
+| Patch   | `patchtst`     | per-patch (Transformer)                     |     3      |     4     |          256           |           **64**           |
+| Patch   | `patchmixer`   | per-patch (CNN, single-layer)               |     1      |     -     |          256           |           **64**           |
+| Patch   | `tmix`         | per-patch (MLP, TSMixer-style)              |     2      |     -     |          128           |           **64**           |
+| Variate | `itransformer` | per-variable (inverted Transformer)         |     3      |     4     |          512           |           **64**           |
+| Variate | `s_mamba`      | per-variable (bidirectional Mamba)          |     2      |     -     |          256           |           **64**           |
+| Hybrid  | `timexer`      | per-patch + per-variable exogenous          |     3      |     4     |          256           |           **64**           |
 
 For **classification**, all six backbones run at `--hid_dim 64` in both standalone and QuITE-equipped form (paper Appendix B.1).
 
-> **TimeXer.** As the hybrid backbone, TimeXer instantiates two embeddings internally (`patch_embedding` + `variate_embedding`); the chosen `--mode` is applied to both.
+> **TimeXer.** As the hybrid backbone, TimeXer instantiates two embeddings internally (`patch_embedding` and `variate_embedding`); the chosen `--mode` is applied to both.
 
 ### QuITE++ per-(dataset, horizon) settings
 
-QuITE++ is tuned per dataset via grid search over `--hid_dim ∈ {32, 64}`, `--nlayer ∈ {1, 2, 3}`, `--nhead ∈ {1, 2, 4, 8}` (paper §6.1). The selected values used to produce paper Table 4 are baked into `jobs/run_quite_plus.sh`:
+QuITE++ is tuned per dataset via grid search over `--hid_dim` in `{32, 64}`, `--nlayer` in `{1, 2, 3}`, `--nhead` in `{1, 2, 4, 8}` (paper §6.1). The selected values that produce paper Table 4 are baked into `jobs/run_quite_plus.sh`:
 
-| Dataset | Horizon | `--hid_dim` | `--nlayer` | `--nhead` |
-|---|---|:---:|:---:|:---:|
-| **Activity**  | 3000 → 1000 | 64 | 3 | 8 |
-| **Activity**  | 2000 → 2000 | 64 | 3 | 4 |
-| **Activity**  | 1000 → 3000 | 64 | 2 | 2 |
-| **USHCN**     | 24 → 1  | 32 | 1 | 2 |
-| **USHCN**     | 24 → 6  | 32 | 1 | 4 |
-| **USHCN**     | 24 → 12 | 64 | 2 | 2 |
-| **PhysioNet** | 12 → 36 | 64 | 3 | 2 |
-| **PhysioNet** | 24 → 24 | 64 | 2 | 4 |
-| **PhysioNet** | 36 → 12 | 64 | 1 | 4 |
-| **MIMIC-III** | 12 → 36 | 32 | 3 | 4 |
-| **MIMIC-III** | 24 → 24 | 32 | 3 | 4 |
-| **MIMIC-III** | 36 → 12 | 32 | 1 | 4 |
-
----
-
-## 🎛 Embedding Modes (`--mode`)
-
-| `--mode` | Meaning | Paper | Pair with `--irr_emb`? |
-|---|---|---|:---:|
-| **`quite`** | **QuITE** — query-based irregular embedding (main method) | Eq. 5-13 | ✅ |
-| `mean` | Mean Pooling baseline | Table 5 | ✅ |
-| `mtand` | mTAND attention baseline | Table 5 | ✅ |
-| `add` | value + time embedding | Table 5 | ❌ |
-| `concat` | value ‖ time embedding | Table 5 | ❌ |
-| `False` | vanilla backbone embedding (no time conditioning) | — | ❌ |
+| Dataset       |    Horizon    | `--hid_dim` | `--nlayer` | `--nhead` |
+| ------------- | :-----------: | :---------: | :--------: | :-------: |
+| Activity      | 3000 -> 1000  |     64      |     3      |     8     |
+| Activity      | 2000 -> 2000  |     64      |     3      |     4     |
+| Activity      | 1000 -> 3000  |     64      |     2      |     2     |
+| USHCN         |    24 -> 1    |     32      |     1      |     2     |
+| USHCN         |    24 -> 6    |     32      |     1      |     4     |
+| USHCN         |   24 -> 12    |     64      |     2      |     2     |
+| PhysioNet     |   12 -> 36    |     64      |     3      |     2     |
+| PhysioNet     |   24 -> 24    |     64      |     2      |     4     |
+| PhysioNet     |   36 -> 12    |     64      |     1      |     4     |
+| MIMIC-III     |   12 -> 36    |     32      |     3      |     4     |
+| MIMIC-III     |   24 -> 24    |     32      |     3      |     4     |
+| MIMIC-III     |   36 -> 12    |     32      |     1      |     4     |
 
 ---
 
-## 📜 Citation
+## Embedding Modes (`--mode`)
+
+| `--mode`   | Meaning                                                       | Paper    | Use with `--irr_emb`? |
+| ---------- | ------------------------------------------------------------- | -------- | :-------------------: |
+| **`quite`**| QuITE -- query-based irregular embedding (paper main method)  | Eq. 5-13 |          Yes          |
+| `mean`     | Mean Pooling baseline                                         | Table 5  |          Yes          |
+| `mtand`    | mTAND attention baseline                                      | Table 5  |          Yes          |
+| `add`      | value embedding + time embedding                              | Table 5  |          No           |
+| `concat`   | value embedding concatenated with time embedding              | Table 5  |          No           |
+| `False`    | vanilla backbone embedding (no time conditioning)             | --       |          No           |
+
+---
+
+## Citation
 
 ```bibtex
 @inproceedings{lim2026quite,
@@ -217,6 +214,6 @@ QuITE++ is tuned per dataset via grid search over `--hid_dim ∈ {32, 64}`, `--n
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 Built on top of [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN), [Raindrop](https://github.com/mims-harvard/Raindrop), [Time-Series-Library](https://github.com/thuml/Time-Series-Library), [S-D-Mamba](https://github.com/wzhwzhwzh0921/S-D-Mamba), [Hi-Patch](https://github.com/qianlima-lab/Hi-Patch), and [PyOmniTS](https://github.com/Ladbaby/PyOmniTS).
