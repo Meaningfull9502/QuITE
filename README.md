@@ -88,7 +88,7 @@ We use **4 forecasting** + **3 classification** benchmarks, following [t-PatchGN
 - **PhysioNet, Human Activity** — auto-downloaded by the code.
 - **USHCN** — use `small_chunked_sporadic.csv` from [GRU-ODE-Bayes](https://github.com/edebrouwer/gru_ode_bayes).
 - **MIMIC-III** — request raw data via [PhysioNet](https://physionet.org/content/mimiciii/1.4/) (credentialed), then run the [Neural Flows preprocessing](https://github.com/mbilos/neural-flows-experiments/blob/master/nfe/experiments/gru_ode_bayes/data_preproc/mimic_prep.ipynb).
-- **P12, P19, PAM** — use the Raindrop-processed splits ([P19](https://doi.org/10.6084/m9.figshare.19514338.v1), [P12](https://doi.org/10.6084/m9.figshare.19514341.v1)).
+- **P12, P19, PAM** — use the Raindrop-processed splits ([P19](https://doi.org/10.6084/m9.figshare.19514338.v1), [P12](https://doi.org/10.6084/m9.figshare.19514341.v1), [PAM](https://doi.org/10.6084/m9.figshare.19514347.v1)).
 
 ---
 
@@ -164,24 +164,7 @@ For **classification**, all six backbones run at `--hid_dim 64` in both standalo
 
 > **TimeXer.** As the hybrid backbone, TimeXer instantiates two embeddings internally (`patch_embedding` and `variate_embedding`); the chosen `--mode` is applied to both.
 
-### QuITE++ per-(dataset, horizon) settings
-
-QuITE++ is tuned per dataset via grid search over `--hid_dim` in `{32, 64}`, `--nlayer` in `{1, 2, 3}`, `--nhead` in `{1, 2, 4, 8}` (paper §6.1). The selected values that produce paper Table 4 are baked into `jobs/run_quite_plus.sh`:
-
-| Dataset       |    Horizon    | `--hid_dim` | `--nlayer` | `--nhead` |
-| ------------- | :-----------: | :---------: | :--------: | :-------: |
-| Activity      | 3000 -> 1000  |     64      |     3      |     8     |
-| Activity      | 2000 -> 2000  |     64      |     3      |     4     |
-| Activity      | 1000 -> 3000  |     64      |     2      |     2     |
-| USHCN         |    24 -> 1    |     32      |     1      |     2     |
-| USHCN         |    24 -> 6    |     32      |     1      |     4     |
-| USHCN         |   24 -> 12    |     64      |     2      |     2     |
-| PhysioNet     |   12 -> 36    |     64      |     3      |     2     |
-| PhysioNet     |   24 -> 24    |     64      |     2      |     4     |
-| PhysioNet     |   36 -> 12    |     64      |     1      |     4     |
-| MIMIC-III     |   12 -> 36    |     32      |     3      |     4     |
-| MIMIC-III     |   24 -> 24    |     32      |     3      |     4     |
-| MIMIC-III     |   36 -> 12    |     32      |     1      |     4     |
+> **QuITE++.** Tuned per dataset via grid search over `--hid_dim` in `{32, 64}`, `--nlayer` in `{1, 2, 3}`, `--nhead` in `{1, 2, 4, 8}` (paper §6.1). The selected values that produce paper Table 4 are baked into `jobs/run_quite_plus.sh`.
 
 ---
 
