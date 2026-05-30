@@ -113,7 +113,7 @@ python train_quite_plus.py --dataset physionet --history 24 \
 ```bash
 # QuITE + PatchTST on P19 (classification)
 python train_classification.py --dataset P19 \
-    --patch_size 3.75 --stride 3.75 --hid_dim 64 --nhead 2 --nlayer 3 \
+    --patch_size 3.75 --stride 3.75 --hid_dim 64 --nhead 4 --nlayer 3 \
     --batch_size 64 --lr 1e-3 --epoch 1000 --gpu 0 \
     --irr_emb --model patchtst --mode quite
 ```
