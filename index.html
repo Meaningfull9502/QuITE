@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuITE: Query-Based Irregular Time Series Embedding · ICML 2026</title>
+    <meta name="description" content="QuITE is a plug-and-play input-embedding module that lets any state-of-the-art multivariate time series model handle irregular observations. Accepted at ICML 2026.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, { delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+        ], throwOnError: false });"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #fbfaf7;
+            --surface: #ffffff;
+            --surface-2: #f5f4f1;
+            --ink: #292524;
+            --ink-2: #44403c;
+            --ink-3: #78716c;
+            --ink-4: #a8a29e;
+            --line: #e7e5e4;
+            --line-2: #d6d3d1;
+            --accent: #5b21b6;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-feature-settings: "ss01", "cv11";
+            font-size: 14.5px;
+        }
+        .font-serif { font-family: 'Newsreader', serif; font-feature-settings: "lnum"; }
+        .font-mono  { font-family: 'JetBrains Mono', monospace; }
+
+        .paper-grain {
+            background-image: radial-gradient(circle at 1px 1px, rgba(20,17,15,0.04) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+
+        .gradient-title {
+            background: linear-gradient(180deg, #292524 0%, #57534e 60%, #78716c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .accent-underline {
+            background-image: linear-gradient(120deg, #fde68a 0%, #fde68a 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 35%;
+            background-position: 0 88%;
+            padding: 0 2px;
+        }
+
+        .hero-glow::before {
+            content: '';
+            position: absolute;
+            top: -10%; left: 50%;
+            transform: translateX(-50%);
+            width: 80%; height: 60%;
+            background:
+                radial-gradient(ellipse at center, rgba(91,33,182,0.10) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 40% at 30% 40%, rgba(37,99,235,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            border-color: var(--line-2);
+            box-shadow: 0 10px 24px -12px rgba(20,17,15,0.10);
+        }
+
+        .eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 10.5px;
+            color: var(--ink-3);
+        }
+
+        .pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 8px;
+            font-size: 10.5px; font-weight: 600;
+            border-radius: 999px;
+            background: #f5f4f1;
+            border: 1px solid var(--line);
+            color: var(--ink-2);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .pill-dot { width: 5px; height: 5px; border-radius: 999px; background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
+
+        table.results { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 12px; }
+        table.results th, table.results td { padding: 6px 9px; text-align: center; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+        table.results th:last-child, table.results td:last-child { border-right: 0; }
+        table.results thead th { background: #faf9f6; font-weight: 600; color: var(--ink-2); font-size: 11px; }
+        table.results tbody td.row-label { font-weight: 600; color: var(--ink); text-align: left; padding-left: 12px; white-space: nowrap; }
+        .best { color: #b91c1c; font-weight: 700; }
+        .second { color: #1d4ed8; font-weight: 600; }
+        table.results tr:hover td { background: #fafaf7; }
+        .quite-row td { background: rgba(94,234,212,0.07) !important; }
+        .quite-row td.row-label { color: #047857 !important; }
+        .section-header { color: var(--ink-2); font-style: italic; font-size: 10.5px; padding: 5px 12px !important; }
+
+        .nav-link { color: var(--ink-3); transition: color .15s ease; }
+        .nav-link:hover { color: var(--ink); }
+        .nav-link.active { color: var(--accent); }
+
+        .insight-block {
+            background: linear-gradient(180deg, #ffffff 0%, #faf8f3 100%);
+            border-left: 3px solid #5b21b6;
+        }
+
+        .eq-block {
+            background: var(--surface);
+            border: 1px dashed var(--line-2);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 13.5px;
+            overflow-x: auto;
+        }
+
+        .codebox {
+            background: #292524;
+            color: #d6d3d1;
+            border-radius: 10px;
+            padding: 18px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.65;
+            position: relative;
+            overflow-x: auto;
+        }
+        .codebox .k { color: #fcd34d; }
+        .codebox .s { color: #a5f3fc; }
+
+        .x-mark { color: #b91c1c; }
+        .check { color: #15803d; }
+
+        .figure-wrap {
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 1px 0 rgba(255,255,255,1) inset, 0 6px 18px -14px rgba(20,17,15,0.10);
+        }
+        .figure-caption { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+        details summary { list-style: none; cursor: pointer; }
+        details summary::-webkit-details-marker { display: none; }
+        details[open] .chev { transform: rotate(180deg); }
+        .chev { transition: transform .2s; }
+
+        .sub-tab-btn {
+            padding: 5px 11px; font-size: 11.5px; font-weight: 600;
+            color: var(--ink-3); border-radius: 6px;
+            transition: all .15s ease; cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .sub-tab-btn.active { background: #fff; color: var(--ink); border-color: var(--line-2); box-shadow: 0 1px 2px rgba(20,17,15,0.04); }
+        .sub-tab-btn:not(.active):hover { background: #f5f4f1; color: var(--ink); }
+        .sub-tab-panel { display: none; }
+        .sub-tab-panel.active { display: block; }
+
+        .mini-stat {
+            display: flex; flex-direction: column;
+            padding: 12px 14px;
+            background: #faf9f6; border-radius: 8px;
+            border: 1px solid var(--line);
+        }
+        .mini-stat .v { font-family: 'Newsreader', serif; font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+        .mini-stat .l { font-size: 10px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .1em; margin-top: 3px; }
+
+        .reveal { opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; }
+        .reveal.shown { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) { .hide-mobile { display: none; } }
+    </style>
+</head>
+
+<body class="antialiased">
+
+<!-- ============ NAV ============ -->
+<nav class="sticky top-0 z-50 bg-[rgba(251,250,247,0.85)] backdrop-blur-md border-b border-stone-200">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+        <a href="#hero" class="flex items-center gap-2.5">
+            <span class="font-semibold tracking-tight text-stone-800">QuITE</span>
+            <span class="text-stone-500 text-sm hide-mobile">· ICML 2026</span>
+        </a>
+        <div class="flex items-center gap-5 text-sm font-medium">
+            <a href="#idea"     class="nav-link hide-mobile">Idea</a>
+            <a href="#method"   class="nav-link hide-mobile">Method</a>
+            <a href="#results"  class="nav-link hide-mobile">Results</a>
+            <a href="#analysis" class="nav-link hide-mobile">Analysis</a>
+            <a href="#citation" class="nav-link">Cite</a>
+            <a href="https://github.com/Meaningfull9502/QuITE" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-700 text-white rounded-md text-xs font-semibold hover:bg-stone-800 transition">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                Code
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header id="hero" class="relative overflow-hidden hero-glow">
+    <div class="absolute inset-0 paper-grain opacity-60"></div>
+
+    <div class="relative max-w-5xl mx-auto px-6 pt-16 pb-10 text-center">
+        <div class="flex justify-center gap-2 mb-6 flex-wrap">
+            <span class="pill"><span class="pill-dot"></span> Accepted at ICML 2026</span>
+            <span class="pill"><i data-lucide="map-pin" class="w-3 h-3"></i> Seoul, South Korea</span>
+        </div>
+
+        <h1 class="font-serif text-[32px] md:text-[42px] lg:text-[52px] leading-[1.02] tracking-tight gradient-title font-semibold mb-5">
+            <span class="italic">QuITE</span>: Query-Based<br>Irregular Time Series Embedding
+        </h1>
+
+        <p class="text-base md:text-lg text-stone-600 max-w-2xl mx-auto leading-[1.65] mb-6 font-light">
+            Adapt any state-of-the-art MTS model to <span class="accent-underline">irregular</span> time series — with no architecture change.
+        </p>
+
+        <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-base mb-2">
+            <div>
+                <span class="font-semibold text-stone-800">JungHoon Lim</span>
+                <sup class="text-stone-500 ml-0.5">1</sup>
+            </div>
+        </div>
+        <div class="text-xs text-stone-500 mb-7 font-mono tracking-wide">
+            <sup>1</sup> SK Shieldus, Seongnam, Republic of Korea
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-2.5">
+            <a href="https://arxiv.org/abs/2605.28166" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-stone-700 text-white rounded-lg hover:bg-stone-800 transition text-sm font-semibold shadow-sm">
+                <i data-lucide="file-text" class="w-4 h-4"></i> Paper
+            </a>
+            <a href="https://github.com/Meaningfull9502/QuITE" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-stone-800 rounded-lg border border-stone-300 hover:bg-stone-50 transition text-sm font-semibold">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                Code
+            </a>
+            <a href="#citation" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-stone-800 rounded-lg border border-stone-300 hover:bg-stone-50 transition text-sm font-semibold">
+                <i data-lucide="quote" class="w-4 h-4"></i> BibTeX
+            </a>
+        </div>
+    </div>
+
+    <div class="border-b border-stone-200"></div>
+</header>
+
+<!-- ============ THE IDEA ============ -->
+<section id="idea" class="py-16 scroll-mt-20">
+    <div class="max-w-5xl mx-auto px-6">
+
+        <!-- Big key insight -->
+        <div class="text-center mb-6">
+            <div class="eyebrow mb-2">The idea</div>
+            <h2 class="font-serif text-2xl md:text-[34px] font-semibold leading-[1.1] text-stone-800 max-w-3xl mx-auto">
+                The bottleneck in irregular time series<br>isn't the backbone —<br>
+                <span class="accent-underline">it's the input embedding.</span>
+            </h2>
+            <p class="mt-6 text-stone-600 leading-[1.7] max-w-2xl mx-auto">
+                Modern multivariate time series models silently assume uniform sampling at their input layer. QuITE replaces that layer with a tiny, plug-and-play module — and the rest of the model just works on irregular data.
+            </p>
+        </div>
+
+        <!-- At-a-glance grid -->
+        <div class="grid md:grid-cols-3 gap-5">
+            <div class="card p-6">
+                <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-stone-500 mb-3">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Problem
+                </div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Existing methods trade off</h3>
+                <p class="text-sm text-stone-600 leading-[1.7]">Specialized IMTS architectures lose backbone flexibility. Interpolation introduces artificial values that distort dynamics.</p>
+            </div>
+            <div class="card p-6" style="background: linear-gradient(180deg, #ffffff 0%, #f6f3ec 100%); border-color: #c7b894;">
+                <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-amber-700 mb-3">
+                    <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> Idea
+                </div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Learnable query tokens</h3>
+                <p class="text-sm text-stone-700 leading-relaxed">A single self-attention layer lets a small set of queries aggregate irregular observations into a fixed-shape embedding — like <code class="bg-white/60 px-1 py-0.5 rounded text-xs">[CLS]</code> in BERT.</p>
+            </div>
+            <div class="card p-6">
+                <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-stone-500 mb-3">
+                    <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Result
+                </div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Drop-in gain on every backbone</h3>
+                <p class="text-sm text-stone-600 leading-[1.7]">Up to <strong>+54.7%</strong> MSE reduction in forecasting and <strong>+15.8%</strong> in classification, with <em>fewer</em> parameters than the original backbone.</p>
+            </div>
+        </div>
+
+        <!-- Abstract -->
+        <details class="mt-10 card p-5 group" open>
+            <summary class="flex items-center justify-between">
+                <span class="eyebrow">Full abstract</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-stone-500 chev"></i>
+            </summary>
+            <p class="mt-5 text-stone-700 leading-[1.75] text-[13.5px]">
+                Irregular Multivariate Time Series (IMTS) are common in practice, yet their irregular sampling complicates effective modeling. Existing approaches typically either (i) design specialized architectures that limit the reuse of proven MTS models, or (ii) map IMTS onto regular temporal grids through interpolation, which may distort temporal dynamics by introducing artificial values. To address these limitations, we propose a new <em>input-embedding-based approach</em>. We identify that the key bottleneck lies not in the backbone architecture, but in conventional embedding layers that assume uniform sampling. We introduce <strong>QuITE</strong>, a simple yet effective plug-and-play embedding module for IMTS that employs learnable query tokens to aggregate irregular observations through a single self-attention layer, directly producing backbone-compatible latent representations without artificial value generation or architectural modification. Extensive experiments show that QuITE consistently improves MTS models, yielding average relative gains of up to <strong>54.7%</strong> in forecasting and <strong>15.8%</strong> in classification across diverse datasets and backbone architectures.
+            </p>
+        </details>
+    </div>
+</section>
+
+<!-- ============ WHY IT MATTERS ============ -->
+<section class="py-14 bg-white border-y border-stone-200">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="max-w-3xl mb-6">
+            <div class="eyebrow mb-2">Why a new approach?</div>
+            <h2 class="font-serif text-2xl md:text-[30px] font-semibold text-stone-800 leading-tight">Two existing camps, each with a cost.</h2>
+            <p class="mt-3 text-stone-600 leading-[1.7]">Prior work for irregular time series falls cleanly into two groups — neither preserves both backbone flexibility and faithful temporal dynamics.</p>
+        </div>
+
+        <!-- Table 1 — first -->
+        <div class="card overflow-hidden mb-7">
+            <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
+                <div>
+                    <div class="font-semibold text-stone-800">Table 1 · Comparison of approaches</div>
+                    <div class="text-xs text-stone-500 mt-0.5">Only the input-embedding-based approach satisfies both criteria.</div>
+                </div>
+                <span class="pill" style="color: #047857; background: #ecfdf5; border-color: #a7f3d0;">Ours satisfies both</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="results">
+                    <thead>
+                        <tr>
+                            <th class="!text-left">Approach</th>
+                            <th>No artificial value</th>
+                            <th>Model flexibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-label">Architecture-based</td>
+                            <td><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 font-bold">✓</span></td>
+                            <td><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-50 text-red-700 font-bold">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">Data-based</td>
+                            <td><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-50 text-red-700 font-bold">✗</span></td>
+                            <td><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 font-bold">✓</span></td>
+                        </tr>
+                        <tr class="quite-row">
+                            <td class="row-label">Input-embedding-based (Ours)</td>
+                            <td><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold">✓</span></td>
+                            <td><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5">
+            <div class="card p-5 card-hover">
+                <div class="font-mono text-[10px] tracking-wider text-stone-500 mb-3 uppercase">Approach 01 · Architecture</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">Build a new model for IMTS</h3>
+                <p class="text-sm text-stone-600 leading-[1.7] mb-5">RNNs with decay gates, neural ODEs, graph networks designed from scratch for irregular data.</p>
+                <div class="space-y-1.5 text-sm">
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 check"></i><span class="text-stone-700">No artificial values</span></div>
+                    <div class="flex items-center gap-2"><i data-lucide="x" class="w-3.5 h-3.5 x-mark"></i><span class="text-stone-700">Cannot reuse proven MTS models</span></div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-stone-100 text-[11px] font-mono text-stone-500">GRU-D · Latent-ODE · Raindrop · Hi-Patch</div>
+            </div>
+            <div class="card p-5 card-hover">
+                <div class="font-mono text-[10px] tracking-wider text-stone-500 mb-3 uppercase">Approach 02 · Data</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">Resample to a regular grid</h3>
+                <p class="text-sm text-stone-600 leading-[1.7] mb-5">Interpolate IMTS to a uniform timeline at the raw-data or representation level, then use a standard MTS model.</p>
+                <div class="space-y-1.5 text-sm">
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 check"></i><span class="text-stone-700">Backbone flexibility</span></div>
+                    <div class="flex items-center gap-2"><i data-lucide="x" class="w-3.5 h-3.5 x-mark"></i><span class="text-stone-700">Distorts dynamics with fake values</span></div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-stone-100 text-[11px] font-mono text-stone-500">IP-Nets · mTAND</div>
+            </div>
+            <div class="card p-5 relative overflow-hidden" style="background: linear-gradient(180deg, #ffffff 0%, #f6f3ec 100%); border-color: #c7b894;">
+                <div class="absolute top-0 right-0 px-3 py-1 bg-stone-700 text-white text-[10px] font-mono uppercase tracking-wider rounded-bl-lg">Ours</div>
+                <div class="font-mono text-[10px] tracking-wider text-amber-700 mb-3 uppercase">Approach 03 · Embedding</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">Replace the input embedding</h3>
+                <p class="text-sm text-stone-700 leading-relaxed mb-5">Keep the backbone untouched; rewrite only the embedding layer with learnable query tokens that aggregate irregular observations.</p>
+                <div class="space-y-1.5 text-sm">
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 check"></i><span class="text-stone-700">No artificial values</span></div>
+                    <div class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 check"></i><span class="text-stone-700">Full backbone flexibility</span></div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-amber-200/60 text-[11px] font-mono text-amber-900">QuITE (this work)</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ METHOD ============ -->
+<section id="method" class="py-16 scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="max-w-3xl mx-auto text-center mb-7">
+            <div class="eyebrow mb-2">Method</div>
+            <h2 class="font-serif text-2xl md:text-[34px] font-semibold text-stone-800 leading-tight">Tokenize. Then aggregate.</h2>
+            <p class="mt-3 text-stone-600 leading-[1.7]">Two stages, one self-attention layer — that's all QuITE adds to the backbone.</p>
+        </div>
+
+        <!-- Hero figure -->
+        <div class="figure-wrap mb-5">
+            <img src="QuITE.png" alt="QuITE Framework" class="w-full h-auto rounded-lg">
+        </div>
+        <div class="figure-caption text-center mb-6">
+            <strong class="text-stone-700">Figure 1.</strong> QuITE framework — irregular observations are tokenized into (time, value) embeddings, then a small set of learnable query tokens aggregate them via masked self-attention.
+        </div>
+
+        <!-- Stage A & B side by side -->
+        <div class="grid lg:grid-cols-2 gap-5 mb-6">
+            <div class="card p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-stone-700 text-white flex items-center justify-center text-sm font-bold font-serif">A</div>
+                    <div class="font-mono text-xs uppercase tracking-wider text-stone-500">Tokenization</div>
+                </div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">Each observation becomes one token</h3>
+                <p class="text-sm text-stone-600 leading-[1.7] mb-5">
+                    Every value–time–mask triplet $(x_{n,i}, t_{n,i}, m_{n,i})$ is encoded as the sum of a harmonic time embedding and a learned value projection. No interpolation — the irregular set is preserved exactly.
+                </p>
+                <div class="border-t border-stone-100 pt-5 space-y-3 text-sm">
+                    <div>$$\phi(t)[k] = \begin{cases} \omega_0 t + \alpha_0, & k = 0 \\ \sin(\omega_k t + \alpha_k), & k > 0 \end{cases}$$</div>
+                    <div>$$\mathbf{z}_{n,i} = f_{\text{val}}(x_{n,i}) + \phi(t_{n,i})$$</div>
+                </div>
+            </div>
+
+            <div class="card p-5">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-stone-700 text-white flex items-center justify-center text-sm font-bold font-serif">B</div>
+                    <div class="font-mono text-xs uppercase tracking-wider text-stone-500">Aggregation</div>
+                </div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-3">One learnable query summarizes them all</h3>
+                <p class="text-sm text-stone-600 leading-[1.7] mb-5">
+                    A learnable query token $\mathbf{q}_n$ is prepended to the observation tokens, and a single masked self-attention layer lets the query summarize all observed entries. Two flavors: variable-level (variate-token models) and patch-level (patch-token models).
+                </p>
+                <div class="border-t border-stone-100 pt-5 space-y-3 text-sm">
+                    <div>$$\mathbf{H}_n = \text{SelfAttn}([\mathbf{q}_n;\mathbf{Z}_n],\ [1\,|\,\mathbf{m}_n])$$</div>
+                    <div>$$\mathbf{e}_n = \mathbf{H}_n[0] \in \mathbb{R}^D \quad\Rightarrow\quad \mathbf{E}^{\text{var}}\in\mathbb{R}^{N\times D}$$</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QuITE++ Architecture -->
+        <div class="border-t border-stone-200 pt-16">
+            <div class="max-w-3xl mb-7">
+                <div class="eyebrow mb-2">Extension</div>
+                <h2 class="font-serif text-2xl md:text-[30px] font-semibold text-stone-800 leading-tight">QuITE<sup class="text-2xl text-stone-400">++</sup> — a forecasting architecture built natively around queries</h2>
+                <p class="mt-3 text-stone-600 leading-[1.7] text-sm">Hierarchical encoder interleaving patch- and variable-level attention, with a cross-attention decoder over future timestamps.</p>
+            </div>
+
+            <div class="figure-wrap mb-5">
+                <img src="model.jpg" alt="QuITE++ Architecture" class="w-full h-auto rounded-lg">
+            </div>
+            <div class="figure-caption text-center mb-7">
+                <strong class="text-stone-700">Figure 2.</strong> QuITE<sup>++</sup> — patch-level intra-variable attention, variable-level inter-variable attention, and a cross-attention decoder.
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5">
+                <div class="card p-6">
+                    <div class="w-9 h-9 rounded-lg bg-stone-100 text-stone-800 flex items-center justify-center mb-3">
+                        <i data-lucide="layers" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-semibold text-stone-800 mb-2">Patch-level attention</h3>
+                    <p class="text-sm text-stone-600 leading-[1.7]">Aggregates information across temporal patches within each variable.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="w-9 h-9 rounded-lg bg-stone-100 text-stone-800 flex items-center justify-center mb-3">
+                        <i data-lucide="git-merge" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-semibold text-stone-800 mb-2">Variable-level attention</h3>
+                    <p class="text-sm text-stone-600 leading-[1.7]">Models cross-variable dependencies along the variate axis.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="w-9 h-9 rounded-lg bg-stone-100 text-stone-800 flex items-center justify-center mb-3">
+                        <i data-lucide="target" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-semibold text-stone-800 mb-2">Cross-attention decoder</h3>
+                    <p class="text-sm text-stone-600 leading-[1.7]">Future time embeddings query the encoder for arbitrary forecast horizons.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============ SETUP (before results) ============ -->
+<section class="py-14">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="max-w-3xl mb-7">
+            <div class="eyebrow mb-2">Experimental setup</div>
+            <h2 class="font-serif text-2xl md:text-[30px] font-semibold text-stone-800 leading-tight">Seven IMTS benchmarks across three domains.</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="card p-6">
+                <div class="font-mono text-xs uppercase tracking-wider text-stone-500 mb-4">Forecasting</div>
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead><tr><th class="!text-left">Dataset</th><th>Samples</th><th>Vars</th><th>Avg L</th><th>Missing</th></tr></thead>
+                        <tbody>
+                            <tr><td class="row-label">Human Activity</td><td>5,400</td><td>12</td><td>120</td><td>75.0%</td></tr>
+                            <tr><td class="row-label">USHCN</td><td>26,736</td><td>5</td><td>163</td><td>77.9%</td></tr>
+                            <tr><td class="row-label">PhysioNet</td><td>12,000</td><td>36</td><td>74</td><td>88.4%</td></tr>
+                            <tr><td class="row-label">MIMIC-III</td><td>23,457</td><td>96</td><td>46</td><td>96.7%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card p-6">
+                <div class="font-mono text-xs uppercase tracking-wider text-stone-500 mb-4">Classification</div>
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead><tr><th class="!text-left">Dataset</th><th>Samples</th><th>Vars</th><th>Classes</th><th>Missing</th></tr></thead>
+                        <tbody>
+                            <tr><td class="row-label">P19</td><td>38,803</td><td>34</td><td>2</td><td>94.9%</td></tr>
+                            <tr><td class="row-label">P12</td><td>11,988</td><td>36</td><td>2</td><td>88.4%</td></tr>
+                            <tr><td class="row-label">PAM</td><td>5,333</td><td>17</td><td>8</td><td>60.0%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 text-xs text-stone-500 font-mono">5 random seeds · NVIDIA RTX A6000 · hidden dim = 64 for QuITE-equipped models</div>
+    </div>
+</section>
+
+<!-- ============ HEADLINE RESULTS ============ -->
+<section id="results" class="py-16 bg-white border-y border-stone-200 scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="max-w-3xl mb-7">
+            <div class="eyebrow mb-2">Headline results</div>
+            <h2 class="font-serif text-2xl md:text-[34px] font-semibold text-stone-800 leading-tight">Every backbone gets better.<br>Every benchmark, every metric.</h2>
+            <p class="mt-3 text-stone-600 leading-[1.7]">Six representative MTS backbones (PatchTST, PatchMixer, TMix, iTransformer, S-Mamba, TimeXer) across four forecasting and three classification benchmarks.</p>
+        </div>
+
+        <!-- Side-by-side charts -->
+        <div class="grid lg:grid-cols-2 gap-6 mb-6">
+            <div class="figure-wrap">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="font-semibold text-stone-800 text-sm">Forecasting MSE <span class="text-stone-500 font-normal">(lower is better)</span></div>
+                    <span class="pill" style="color: #047857; background: #ecfdf5; border-color: #a7f3d0;">↓ up to 54.7%</span>
+                </div>
+                <img src="forecasting.png" alt="Forecasting MSE gains" class="w-full h-auto rounded-lg">
+            </div>
+            <div class="figure-wrap">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="font-semibold text-stone-800 text-sm">Classification score <span class="text-stone-500 font-normal">(higher is better)</span></div>
+                    <span class="pill" style="color: #047857; background: #ecfdf5; border-color: #a7f3d0;">↑ up to 15.8%</span>
+                </div>
+                <img src="classification.png" alt="Classification gains" class="w-full h-auto rounded-lg">
+            </div>
+        </div>
+
+        <!-- Per-backbone gains -->
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="card p-6">
+                <div class="font-mono text-xs uppercase tracking-wider text-stone-500 mb-4">Forecasting MSE improvement</div>
+                <div class="space-y-2.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">iTransformer</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 100%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↓ 54.7%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">S-Mamba</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 46%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↓ 25.0%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">PatchTST</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 30%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↓ 16.2%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">TimeXer</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 22%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↓ 12.0%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">TMix</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 21%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↓ 11.4%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">PatchMixer</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 9%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↓ 5.1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <div class="font-mono text-xs uppercase tracking-wider text-stone-500 mb-4">Classification gain</div>
+                <div class="space-y-2.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">PatchMixer</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 100%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↑ 15.8%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">TMix</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 87%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↑ 13.8%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">S-Mamba</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 41%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↑ 6.5%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">PatchTST</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 40%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↑ 6.3%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">iTransformer</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 34%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↑ 5.3%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 text-sm font-medium">TimeXer</div>
+                        <div class="flex-1 h-6 rounded bg-stone-100 overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width: 34%"></div>
+                            <span class="absolute inset-y-0 right-2 flex items-center text-xs font-semibold text-stone-800">↑ 5.3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ DETAILED TABLES ============ -->
+<section class="py-16">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="max-w-3xl mb-6">
+            <div class="eyebrow mb-2">Forecasting comparison</div>
+            <h2 class="font-serif text-2xl md:text-[34px] font-semibold text-stone-800 leading-tight">All forecasting models, side by side.</h2>
+            <p class="mt-3 text-stone-600 leading-[1.7]">
+                11 IMTS-specific baselines, 6 QuITE-equipped MTS backbones, and QuITE<sup>++</sup> across 4 datasets × 3 horizons × MSE/MAE = 24 settings (Table 4). QuITE<sup>++</sup> achieves the best result in <strong>20/24</strong>. <span class="best">red</span> = best, <span class="second">blue</span> = second-best.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 mb-5 p-1.5 bg-stone-100 rounded-xl w-fit">
+            <button class="sub-tab-btn active" data-sub="fc-activity">Human Activity</button>
+            <button class="sub-tab-btn" data-sub="fc-ushcn">USHCN</button>
+            <button class="sub-tab-btn" data-sub="fc-physio">PhysioNet</button>
+            <button class="sub-tab-btn" data-sub="fc-mimic">MIMIC-III</button>
+        </div>
+
+        <!-- Activity -->
+        <div class="sub-tab-panel active" data-sub-panel="fc-activity">
+            <div class="card p-2 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead>
+                            <tr><th class="!text-left" rowspan="2">Model</th><th colspan="2">3000→1000 (ms)</th><th colspan="2">2000→2000 (ms)</th><th colspan="2">1000→3000 (ms)</th></tr>
+                            <tr><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="row-label section-header" colspan="7">IMTS-specific baselines</td></tr>
+                            <tr><td class="row-label">Warpformer</td><td>2.61</td><td>3.12</td><td>3.60</td><td>3.81</td><td>4.26</td><td>4.26</td></tr>
+                            <tr><td class="row-label">Raindrop</td><td>4.42</td><td>4.65</td><td>5.57</td><td>5.15</td><td>5.75</td><td>5.37</td></tr>
+                            <tr><td class="row-label">GRU-D</td><td>3.94</td><td>4.37</td><td>5.93</td><td>5.66</td><td>6.14</td><td>5.75</td></tr>
+                            <tr><td class="row-label">tPatchGNN</td><td>2.79</td><td>3.24</td><td>3.71</td><td>3.89</td><td>4.56</td><td>4.32</td></tr>
+                            <tr><td class="row-label">GraFITi</td><td>3.03</td><td>3.45</td><td>4.59</td><td>4.45</td><td>4.91</td><td>4.62</td></tr>
+                            <tr><td class="row-label">CRU</td><td>3.03</td><td>3.60</td><td>4.12</td><td>4.43</td><td>4.85</td><td>4.86</td></tr>
+                            <tr><td class="row-label">mTAND</td><td>3.14</td><td>3.71</td><td>4.38</td><td>4.59</td><td>5.29</td><td>5.12</td></tr>
+                            <tr><td class="row-label">NeuralFlow</td><td>4.29</td><td>4.61</td><td>5.47</td><td>5.35</td><td>6.01</td><td>5.66</td></tr>
+                            <tr><td class="row-label">Latent-ODE</td><td>3.32</td><td>3.91</td><td>5.04</td><td>5.11</td><td>5.48</td><td>5.33</td></tr>
+                            <tr><td class="row-label">HyperIMTS</td><td class="second">2.49</td><td class="second">3.02</td><td class="second">3.15</td><td>3.58</td><td class="second">4.00</td><td>4.13</td></tr>
+                            <tr><td class="row-label">Hi-Patch</td><td>2.56</td><td>3.12</td><td>3.26</td><td>3.67</td><td>4.20</td><td>4.22</td></tr>
+                            <tr><td class="row-label section-header" colspan="7">MTS + QuITE</td></tr>
+                            <tr><td class="row-label">PatchTST + QuITE</td><td>2.76</td><td>3.14</td><td>3.62</td><td>3.74</td><td>4.69</td><td>4.29</td></tr>
+                            <tr><td class="row-label">PatchMixer + QuITE</td><td>2.78</td><td>3.13</td><td>3.67</td><td>3.75</td><td>4.71</td><td>4.31</td></tr>
+                            <tr><td class="row-label">TMix + QuITE</td><td>2.77</td><td>3.15</td><td>3.66</td><td>3.74</td><td>4.75</td><td>4.38</td></tr>
+                            <tr><td class="row-label">iTransformer + QuITE</td><td>2.58</td><td>3.12</td><td>3.25</td><td>3.65</td><td>4.10</td><td>4.18</td></tr>
+                            <tr><td class="row-label">S-Mamba + QuITE</td><td>2.72</td><td>3.24</td><td>3.37</td><td>3.72</td><td>4.22</td><td>4.22</td></tr>
+                            <tr><td class="row-label">TimeXer + QuITE</td><td>2.53</td><td>3.04</td><td>3.19</td><td class="second">3.57</td><td>4.04</td><td class="best">4.03</td></tr>
+                            <tr class="quite-row"><td class="row-label">QuITE<sup>++</sup></td><td class="best">2.46</td><td class="best">2.92</td><td class="best">3.11</td><td class="best">3.49</td><td class="best">3.96</td><td class="second">4.04</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- USHCN -->
+        <div class="sub-tab-panel" data-sub-panel="fc-ushcn">
+            <div class="card p-2 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead>
+                            <tr><th class="!text-left" rowspan="2">Model</th><th colspan="2">24→1 (months)</th><th colspan="2">24→6 (months)</th><th colspan="2">24→12 (months)</th></tr>
+                            <tr><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="row-label section-header" colspan="7">IMTS-specific baselines</td></tr>
+                            <tr><td class="row-label">Warpformer</td><td>5.09</td><td>3.10</td><td>5.12</td><td>3.13</td><td>5.10</td><td>3.13</td></tr>
+                            <tr><td class="row-label">Raindrop</td><td>5.64</td><td>3.29</td><td>7.01</td><td>4.24</td><td>7.61</td><td>4.61</td></tr>
+                            <tr><td class="row-label">GRU-D</td><td>5.17</td><td>3.21</td><td>5.29</td><td>3.34</td><td>5.36</td><td>3.25</td></tr>
+                            <tr><td class="row-label">tPatchGNN</td><td>5.00</td><td>3.07</td><td>5.23</td><td>3.24</td><td>6.23</td><td>3.83</td></tr>
+                            <tr><td class="row-label">GraFITi</td><td>5.07</td><td class="second">2.97</td><td>5.12</td><td>3.09</td><td>5.01</td><td>3.14</td></tr>
+                            <tr><td class="row-label">CRU</td><td>5.15</td><td>3.18</td><td>6.77</td><td>4.11</td><td>6.64</td><td>4.08</td></tr>
+                            <tr><td class="row-label">mTAND</td><td>5.03</td><td>3.00</td><td>5.16</td><td>3.10</td><td>5.07</td><td>3.09</td></tr>
+                            <tr><td class="row-label">NeuralFlow</td><td>5.41</td><td>3.35</td><td>5.52</td><td>3.46</td><td>5.48</td><td>3.56</td></tr>
+                            <tr><td class="row-label">Latent-ODE</td><td>5.16</td><td>3.21</td><td>5.18</td><td>3.36</td><td>5.23</td><td>3.35</td></tr>
+                            <tr><td class="row-label">HyperIMTS</td><td class="second">4.96</td><td>3.00</td><td>4.99</td><td>3.10</td><td>4.97</td><td>3.08</td></tr>
+                            <tr><td class="row-label">Hi-Patch</td><td>5.00</td><td>3.03</td><td>5.13</td><td>3.05</td><td>5.04</td><td>3.03</td></tr>
+                            <tr><td class="row-label section-header" colspan="7">MTS + QuITE</td></tr>
+                            <tr><td class="row-label">PatchTST + QuITE</td><td>5.07</td><td>3.01</td><td>5.06</td><td>3.17</td><td>5.04</td><td>3.00</td></tr>
+                            <tr><td class="row-label">PatchMixer + QuITE</td><td>5.11</td><td>3.06</td><td>5.02</td><td>3.04</td><td>5.00</td><td>3.07</td></tr>
+                            <tr><td class="row-label">TMix + QuITE</td><td>5.18</td><td>3.10</td><td>5.52</td><td>3.39</td><td>5.03</td><td>3.05</td></tr>
+                            <tr><td class="row-label">iTransformer + QuITE</td><td>5.06</td><td>3.06</td><td class="second">4.86</td><td class="second">2.96</td><td>4.94</td><td>3.01</td></tr>
+                            <tr><td class="row-label">S-Mamba + QuITE</td><td>5.04</td><td>3.06</td><td>4.93</td><td>3.04</td><td class="second">4.93</td><td>3.02</td></tr>
+                            <tr><td class="row-label">TimeXer + QuITE</td><td>4.97</td><td>2.97</td><td>4.98</td><td>3.05</td><td>4.93</td><td class="second">2.97</td></tr>
+                            <tr class="quite-row"><td class="row-label">QuITE<sup>++</sup></td><td class="best">4.84</td><td class="best">2.92</td><td class="best">4.81</td><td class="best">2.94</td><td class="best">4.81</td><td class="best">2.93</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PhysioNet -->
+        <div class="sub-tab-panel" data-sub-panel="fc-physio">
+            <div class="card p-2 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead>
+                            <tr><th class="!text-left" rowspan="2">Model</th><th colspan="2">12→36 (hours)</th><th colspan="2">24→24 (hours)</th><th colspan="2">36→12 (hours)</th></tr>
+                            <tr><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="row-label section-header" colspan="7">IMTS-specific baselines</td></tr>
+                            <tr><td class="row-label">Warpformer</td><td>6.51</td><td>4.24</td><td>5.04</td><td>3.72</td><td>4.17</td><td>3.38</td></tr>
+                            <tr><td class="row-label">Raindrop</td><td>10.24</td><td>5.83</td><td>10.63</td><td>6.02</td><td>10.67</td><td>5.87</td></tr>
+                            <tr><td class="row-label">GRU-D</td><td>7.80</td><td>5.13</td><td>5.76</td><td>4.53</td><td>6.85</td><td>4.88</td></tr>
+                            <tr><td class="row-label">tPatchGNN</td><td>6.45</td><td>4.24</td><td>5.06</td><td>3.75</td><td>4.22</td><td>3.38</td></tr>
+                            <tr><td class="row-label">GraFITi</td><td>6.30</td><td>4.38</td><td>5.11</td><td>3.96</td><td>4.58</td><td>3.65</td></tr>
+                            <tr><td class="row-label">CRU</td><td>7.66</td><td>4.97</td><td>6.43</td><td>4.51</td><td>6.74</td><td>4.82</td></tr>
+                            <tr><td class="row-label">mTAND</td><td>7.46</td><td>4.85</td><td>6.18</td><td>4.44</td><td>5.61</td><td>4.15</td></tr>
+                            <tr><td class="row-label">NeuralFlow</td><td>7.98</td><td>5.08</td><td>7.68</td><td>4.84</td><td>8.87</td><td>5.43</td></tr>
+                            <tr><td class="row-label">Latent-ODE</td><td>7.28</td><td>4.83</td><td>6.85</td><td>4.77</td><td>6.99</td><td>4.74</td></tr>
+                            <tr><td class="row-label">HyperIMTS</td><td class="second">6.11</td><td>4.16</td><td class="best">4.65</td><td class="best">3.56</td><td class="second">3.99</td><td class="second">3.21</td></tr>
+                            <tr><td class="row-label">Hi-Patch</td><td>6.39</td><td>4.10</td><td>5.07</td><td>3.63</td><td>4.27</td><td>3.30</td></tr>
+                            <tr><td class="row-label section-header" colspan="7">MTS + QuITE</td></tr>
+                            <tr><td class="row-label">PatchTST + QuITE</td><td>17.47</td><td>7.15</td><td>10.62</td><td>5.17</td><td>8.87</td><td>4.43</td></tr>
+                            <tr><td class="row-label">PatchMixer + QuITE</td><td>17.52</td><td>7.22</td><td>11.88</td><td>5.62</td><td>9.06</td><td>4.55</td></tr>
+                            <tr><td class="row-label">TMix + QuITE</td><td>17.48</td><td>7.21</td><td>10.72</td><td>5.22</td><td>8.96</td><td>4.50</td></tr>
+                            <tr><td class="row-label">iTransformer + QuITE</td><td>6.32</td><td>4.15</td><td>4.99</td><td>3.65</td><td>4.33</td><td>3.34</td></tr>
+                            <tr><td class="row-label">S-Mamba + QuITE</td><td>6.26</td><td>4.11</td><td>5.11</td><td>3.67</td><td>4.11</td><td>3.27</td></tr>
+                            <tr><td class="row-label">TimeXer + QuITE</td><td>6.18</td><td class="second">4.08</td><td>4.91</td><td>3.64</td><td>4.06</td><td>3.27</td></tr>
+                            <tr class="quite-row"><td class="row-label">QuITE<sup>++</sup></td><td class="best">6.08</td><td class="best">3.99</td><td class="second">4.99</td><td class="second">3.62</td><td class="best">3.81</td><td class="best">3.18</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIMIC-III -->
+        <div class="sub-tab-panel" data-sub-panel="fc-mimic">
+            <div class="card p-2 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead>
+                            <tr><th class="!text-left" rowspan="2">Model</th><th colspan="2">12→36 (hours)</th><th colspan="2">24→24 (hours)</th><th colspan="2">36→12 (hours)</th></tr>
+                            <tr><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th><th>MSE</th><th>MAE</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="row-label section-header" colspan="7">IMTS-specific baselines</td></tr>
+                            <tr><td class="row-label">Warpformer</td><td>2.32</td><td>8.14</td><td>1.76</td><td>7.27</td><td class="second">1.45</td><td>6.74</td></tr>
+                            <tr><td class="row-label">Raindrop</td><td>2.36</td><td>8.63</td><td>2.31</td><td>8.61</td><td>2.21</td><td>9.17</td></tr>
+                            <tr><td class="row-label">GRU-D</td><td>2.39</td><td>8.43</td><td>2.35</td><td>8.34</td><td>2.03</td><td>8.14</td></tr>
+                            <tr><td class="row-label">tPatchGNN</td><td>2.35</td><td>8.23</td><td>1.97</td><td>7.76</td><td class="best">1.44</td><td>6.78</td></tr>
+                            <tr><td class="row-label">GraFITi</td><td>2.22</td><td>8.13</td><td>1.76</td><td>7.28</td><td>1.61</td><td>7.16</td></tr>
+                            <tr><td class="row-label">CRU</td><td>2.34</td><td>8.32</td><td>2.23</td><td>7.99</td><td>2.00</td><td>8.16</td></tr>
+                            <tr><td class="row-label">mTAND</td><td>2.29</td><td>8.38</td><td>2.15</td><td>8.00</td><td>2.01</td><td>8.13</td></tr>
+                            <tr><td class="row-label">NeuralFlow</td><td>2.26</td><td>8.29</td><td>2.34</td><td>8.09</td><td>1.97</td><td>8.39</td></tr>
+                            <tr><td class="row-label">Latent-ODE</td><td>2.38</td><td>8.35</td><td>2.11</td><td>7.76</td><td>1.90</td><td>7.92</td></tr>
+                            <tr><td class="row-label">HyperIMTS</td><td>1.85</td><td>7.71</td><td>1.68</td><td>6.92</td><td>1.52</td><td>6.68</td></tr>
+                            <tr><td class="row-label">Hi-Patch</td><td>1.88</td><td>7.95</td><td>1.70</td><td>7.18</td><td>1.56</td><td>6.74</td></tr>
+                            <tr><td class="row-label section-header" colspan="7">MTS + QuITE</td></tr>
+                            <tr><td class="row-label">PatchTST + QuITE</td><td>5.37</td><td>17.01</td><td>3.90</td><td>12.35</td><td>3.82</td><td>11.84</td></tr>
+                            <tr><td class="row-label">PatchMixer + QuITE</td><td>5.37</td><td>16.96</td><td>3.94</td><td>12.34</td><td>3.87</td><td>11.51</td></tr>
+                            <tr><td class="row-label">TMix + QuITE</td><td>5.41</td><td>16.94</td><td>3.98</td><td>12.32</td><td>3.87</td><td>11.63</td></tr>
+                            <tr><td class="row-label">iTransformer + QuITE</td><td>1.83</td><td>7.64</td><td>1.67</td><td>6.93</td><td>1.56</td><td>6.78</td></tr>
+                            <tr><td class="row-label">S-Mamba + QuITE</td><td class="second">1.82</td><td class="second">7.56</td><td class="second">1.64</td><td class="second">6.90</td><td>1.52</td><td class="second">6.64</td></tr>
+                            <tr><td class="row-label">TimeXer + QuITE</td><td>1.84</td><td>7.67</td><td>1.68</td><td>7.12</td><td>1.55</td><td>6.73</td></tr>
+                            <tr class="quite-row"><td class="row-label">QuITE<sup>++</sup></td><td class="best">1.80</td><td class="best">7.54</td><td class="best">1.63</td><td class="best">6.83</td><td>1.48</td><td class="best">6.56</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============ EMBEDDING ABLATION (separate section, paper order) ============ -->
+<section class="py-16 bg-white border-y border-stone-200">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="max-w-3xl mb-6">
+            <div class="eyebrow mb-2">Ablation · Embedding methods</div>
+            <h2 class="font-serif text-2xl md:text-[34px] font-semibold text-stone-800 leading-tight">What if we replace QuITE with something simpler?</h2>
+            <p class="mt-3 text-stone-600 leading-[1.7]">Compared against four standard input adaptations — Add, Concat, mTAND interpolation, Mean Pool — on PatchTST, iTransformer, and QuITE<sup>++</sup> (Table 5).</p>
+        </div>
+
+        <div class="card p-2 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="results">
+                    <thead>
+                        <tr><th class="!text-left" rowspan="2">Method</th><th rowspan="2">Metric</th>
+                            <th colspan="4">PatchTST</th><th colspan="4">iTransformer</th><th colspan="4">QuITE<sup>++</sup></th>
+                        </tr>
+                        <tr>
+                            <th>Activity</th><th>USHCN</th><th>PhysioNet</th><th>MIMIC-III</th>
+                            <th>Activity</th><th>USHCN</th><th>PhysioNet</th><th>MIMIC-III</th>
+                            <th>Activity</th><th>USHCN</th><th>PhysioNet</th><th>MIMIC-III</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label" rowspan="2">Add</td><td>MSE</td><td>4.00</td><td>5.23</td><td>13.79</td><td>4.71</td><td>4.98</td><td>6.26</td><td>18.26</td><td>6.34</td><td>3.44</td><td>5.05</td><td>5.34</td><td>1.71</td></tr>
+                        <tr><td>MAE</td><td>4.03</td><td class="second">3.17</td><td>6.54</td><td>14.74</td><td>4.84</td><td>3.80</td><td>8.01</td><td>19.73</td><td>3.76</td><td>3.04</td><td>3.86</td><td>7.31</td></tr>
+                        <tr><td class="row-label" rowspan="2">Concat</td><td>MSE</td><td>3.90</td><td>5.21</td><td>12.97</td><td>4.52</td><td>5.77</td><td>6.10</td><td>18.27</td><td>6.48</td><td>3.35</td><td>4.99</td><td>5.43</td><td>1.75</td></tr>
+                        <tr><td>MAE</td><td>3.91</td><td>3.18</td><td>5.96</td><td>14.13</td><td>5.21</td><td>3.67</td><td>8.01</td><td>20.28</td><td>3.71</td><td>3.02</td><td>3.90</td><td>7.28</td></tr>
+                        <tr><td class="row-label" rowspan="2">mTAND</td><td>MSE</td><td class="second">3.74</td><td>5.21</td><td>13.38</td><td class="second">4.39</td><td class="second">3.50</td><td>5.23</td><td>13.11</td><td>4.34</td><td>3.34</td><td>5.01</td><td class="best">4.96</td><td>1.71</td></tr>
+                        <tr><td>MAE</td><td class="second">3.76</td><td>3.20</td><td>6.03</td><td class="second">13.80</td><td class="best">3.65</td><td>3.15</td><td>5.96</td><td>13.72</td><td class="second">3.64</td><td>3.07</td><td class="best">3.60</td><td class="second">7.17</td></tr>
+                        <tr><td class="row-label" rowspan="2">Mean Pool</td><td>MSE</td><td>3.75</td><td class="second">5.14</td><td class="second">12.84</td><td>4.43</td><td>3.59</td><td class="second">5.08</td><td class="second">12.15</td><td class="second">4.33</td><td class="second">3.31</td><td class="second">4.94</td><td class="second">5.26</td><td class="second">1.69</td></tr>
+                        <tr><td>MAE</td><td>3.77</td><td>3.19</td><td class="second">5.95</td><td>13.84</td><td class="second">3.72</td><td class="second">3.11</td><td class="second">5.70</td><td class="second">13.61</td><td class="second">3.64</td><td class="second">3.01</td><td class="second">3.89</td><td>7.23</td></tr>
+                        <tr class="quite-row"><td class="row-label" rowspan="2">QuITE</td><td>MSE</td><td class="best">3.69</td><td class="best">5.06</td><td class="best">12.32</td><td class="best">4.36</td><td class="best">3.31</td><td class="best">4.95</td><td class="best">5.21</td><td class="best">1.69</td><td class="best">3.18</td><td class="best">4.82</td><td class="best">4.96</td><td class="best">1.64</td></tr>
+                        <tr class="quite-row"><td>MAE</td><td class="best">3.72</td><td class="best">3.06</td><td class="best">5.58</td><td class="best">13.73</td><td class="best">3.65</td><td class="best">3.01</td><td class="best">3.71</td><td class="best">7.12</td><td class="best">3.48</td><td class="best">2.93</td><td class="best">3.60</td><td class="best">6.98</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+            <div class="card p-4"><div class="font-mono text-[10px] uppercase tracking-wider text-stone-500 mb-1">vs. Add</div><div class="font-serif text-xl font-semibold text-emerald-700">12 / 12 MSE wins</div></div>
+            <div class="card p-4"><div class="font-mono text-[10px] uppercase tracking-wider text-stone-500 mb-1">vs. Concat</div><div class="font-serif text-xl font-semibold text-emerald-700">12 / 12 MSE wins</div></div>
+            <div class="card p-4"><div class="font-mono text-[10px] uppercase tracking-wider text-stone-500 mb-1">vs. mTAND</div><div class="font-serif text-xl font-semibold text-emerald-700">11 / 12 MSE wins</div></div>
+            <div class="card p-4"><div class="font-mono text-[10px] uppercase tracking-wider text-stone-500 mb-1">vs. Mean Pool</div><div class="font-serif text-xl font-semibold text-emerald-700">12 / 12 MSE wins</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ ANALYSIS ============ -->
+<section id="analysis" class="py-16 bg-white border-y border-stone-200 scroll-mt-20">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="max-w-3xl mb-7">
+            <div class="eyebrow mb-2">Analysis</div>
+        </div>
+
+        <!-- A. Embedding quality (t-SNE) — compact 3-col layout -->
+        <div class="mb-7">
+            <div class="max-w-3xl mb-6">
+                <div class="eyebrow mb-2">A · Embedding quality</div>
+                <h3 class="font-serif text-xl md:text-2xl font-semibold text-stone-800 mb-2">Tighter, more separable clusters</h3>
+                <p class="text-stone-600 leading-[1.7] text-sm">
+                    t-SNE projection of learned embeddings on PAM (8 activity classes). Across patch-, variable-, and hybrid-token backbones, QuITE produces more compact and clearly separated clusters.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <!-- PatchTST -->
+                <div>
+                    <div class="flex items-center gap-2 mb-2.5">
+                        <span class="pill" style="font-size: 10px;">PatchTST</span>
+                        <span class="text-[10px] text-stone-500 font-mono">patch-token</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="bg-white border border-stone-200 rounded-lg p-2">
+                            <img src="patch_nz.png" alt="PatchTST t-SNE without QuITE" class="w-full h-auto rounded">
+                            <div class="text-[10px] text-stone-500 text-center mt-1 font-mono">w/o QuITE</div>
+                        </div>
+                        <div class="bg-white border rounded-lg p-2" style="border-color: #c7b894;">
+                            <img src="patch_z.png" alt="PatchTST t-SNE with QuITE" class="w-full h-auto rounded">
+                            <div class="text-[10px] text-center mt-1 font-mono" style="color: #92400e;">w/ QuITE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- iTransformer -->
+                <div>
+                    <div class="flex items-center gap-2 mb-2.5">
+                        <span class="pill" style="font-size: 10px;">iTransformer</span>
+                        <span class="text-[10px] text-stone-500 font-mono">variable-token</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="bg-white border border-stone-200 rounded-lg p-2">
+                            <img src="itrans_nz.png" alt="iTransformer t-SNE without QuITE" class="w-full h-auto rounded">
+                            <div class="text-[10px] text-stone-500 text-center mt-1 font-mono">w/o QuITE</div>
+                        </div>
+                        <div class="bg-white border rounded-lg p-2" style="border-color: #c7b894;">
+                            <img src="itrans_z.png" alt="iTransformer t-SNE with QuITE" class="w-full h-auto rounded">
+                            <div class="text-[10px] text-center mt-1 font-mono" style="color: #92400e;">w/ QuITE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TimeXer -->
+                <div>
+                    <div class="flex items-center gap-2 mb-2.5">
+                        <span class="pill" style="font-size: 10px;">TimeXer</span>
+                        <span class="text-[10px] text-stone-500 font-mono">hybrid</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="bg-white border border-stone-200 rounded-lg p-2">
+                            <img src="timexer1_nz.png" alt="TimeXer t-SNE without QuITE" class="w-full h-auto rounded">
+                            <div class="text-[10px] text-stone-500 text-center mt-1 font-mono">w/o QuITE</div>
+                        </div>
+                        <div class="bg-white border rounded-lg p-2" style="border-color: #c7b894;">
+                            <img src="timexer1_z.png" alt="TimeXer t-SNE with QuITE" class="w-full h-auto rounded">
+                            <div class="text-[10px] text-center mt-1 font-mono" style="color: #92400e;">w/ QuITE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-[11px] text-stone-500 text-center font-mono">Figure 4 (paper) · t-SNE Visualization on PAM</div>
+        </div>
+
+        <!-- B. Sparsity -->
+        <div class="grid lg:grid-cols-5 gap-6 items-center mb-7">
+            <div class="lg:col-span-3 figure-wrap">
+                <img src="missing.png" alt="Robustness to sparsity" class="w-full h-auto rounded-lg">
+                <div class="figure-caption mt-2 text-center">Figure 3. Additional random observation removal of 0–75% on top of already-sparse benchmarks.</div>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="eyebrow mb-2">B · Observation sparsity</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Stable up to 50% extra missingness</h3>
+                <p class="text-stone-600 leading-[1.7] text-sm">
+                    On benchmarks that are already 75–97% sparse, accuracy degrades only marginally up to 50% additional removal. Even at 75% removal, the model still produces usable predictions on most datasets.
+                </p>
+            </div>
+        </div>
+
+        <!-- C. Hyperparameters -->
+        <div class="grid lg:grid-cols-2 gap-6 mb-7 items-center">
+            <div class="order-2 lg:order-1 card p-6">
+                <div class="text-xs font-mono uppercase tracking-wider text-stone-500 mb-3 text-center">MSE across hyperparameter sweeps</div>
+                <svg viewBox="0 0 600 240" class="w-full h-auto">
+                    <defs><style>.axis{stroke:#d6d3d1;stroke-width:1;}.gl{stroke:#f5f4f1;stroke-width:1;stroke-dasharray:2 2;}.tk{fill:#a8a29e;font-family:'JetBrains Mono',monospace;font-size:9px;}.lbl{fill:#44403c;font-family:'JetBrains Mono',monospace;font-size:10px;}</style></defs>
+
+                    <g transform="translate(20,10)">
+                        <text x="80" y="14" text-anchor="middle" class="lbl">Hidden dim</text>
+                        <line x1="20" y1="170" x2="140" y2="170" class="axis"/><line x1="20" y1="30" x2="20" y2="170" class="axis"/>
+                        <line x1="20" y1="60" x2="140" y2="60" class="gl"/><line x1="20" y1="100" x2="140" y2="100" class="gl"/><line x1="20" y1="140" x2="140" y2="140" class="gl"/>
+                        <text x="20" y="183" class="tk" text-anchor="middle">32</text><text x="140" y="183" class="tk" text-anchor="middle">64</text>
+                        <polyline points="20,140 140,142" fill="none" stroke="#f97316" stroke-width="2"/><circle cx="20" cy="140" r="3" fill="#f97316"/><circle cx="140" cy="142" r="3" fill="#f97316"/>
+                        <polyline points="20,75 140,73" fill="none" stroke="#16a34a" stroke-width="2"/><circle cx="20" cy="75" r="3" fill="#16a34a"/><circle cx="140" cy="73" r="3" fill="#16a34a"/>
+                        <polyline points="20,95 140,97" fill="none" stroke="#2563eb" stroke-width="2"/><circle cx="20" cy="95" r="3" fill="#2563eb"/><circle cx="140" cy="97" r="3" fill="#2563eb"/>
+                        <polyline points="20,158 140,156" fill="none" stroke="#dc2626" stroke-width="2"/><circle cx="20" cy="158" r="3" fill="#dc2626"/><circle cx="140" cy="156" r="3" fill="#dc2626"/>
+                    </g>
+                    <g transform="translate(195,10)">
+                        <text x="80" y="14" text-anchor="middle" class="lbl">Layers</text>
+                        <line x1="20" y1="170" x2="140" y2="170" class="axis"/><line x1="20" y1="30" x2="20" y2="170" class="axis"/>
+                        <line x1="20" y1="60" x2="140" y2="60" class="gl"/><line x1="20" y1="100" x2="140" y2="100" class="gl"/><line x1="20" y1="140" x2="140" y2="140" class="gl"/>
+                        <text x="20" y="183" class="tk" text-anchor="middle">1</text><text x="80" y="183" class="tk" text-anchor="middle">2</text><text x="140" y="183" class="tk" text-anchor="middle">3</text>
+                        <polyline points="20,141 80,140 140,143" fill="none" stroke="#f97316" stroke-width="2"/><circle cx="20" cy="141" r="3" fill="#f97316"/><circle cx="80" cy="140" r="3" fill="#f97316"/><circle cx="140" cy="143" r="3" fill="#f97316"/>
+                        <polyline points="20,76 80,74 140,75" fill="none" stroke="#16a34a" stroke-width="2"/><circle cx="20" cy="76" r="3" fill="#16a34a"/><circle cx="80" cy="74" r="3" fill="#16a34a"/><circle cx="140" cy="75" r="3" fill="#16a34a"/>
+                        <polyline points="20,96 80,94 140,98" fill="none" stroke="#2563eb" stroke-width="2"/><circle cx="20" cy="96" r="3" fill="#2563eb"/><circle cx="80" cy="94" r="3" fill="#2563eb"/><circle cx="140" cy="98" r="3" fill="#2563eb"/>
+                        <polyline points="20,157 80,156 140,159" fill="none" stroke="#dc2626" stroke-width="2"/><circle cx="20" cy="157" r="3" fill="#dc2626"/><circle cx="80" cy="156" r="3" fill="#dc2626"/><circle cx="140" cy="159" r="3" fill="#dc2626"/>
+                    </g>
+                    <g transform="translate(370,10)">
+                        <text x="80" y="14" text-anchor="middle" class="lbl">Heads</text>
+                        <line x1="20" y1="170" x2="200" y2="170" class="axis"/><line x1="20" y1="30" x2="20" y2="170" class="axis"/>
+                        <line x1="20" y1="60" x2="200" y2="60" class="gl"/><line x1="20" y1="100" x2="200" y2="100" class="gl"/><line x1="20" y1="140" x2="200" y2="140" class="gl"/>
+                        <text x="20" y="183" class="tk" text-anchor="middle">1</text><text x="80" y="183" class="tk" text-anchor="middle">2</text><text x="140" y="183" class="tk" text-anchor="middle">4</text><text x="200" y="183" class="tk" text-anchor="middle">8</text>
+                        <polyline points="20,142 80,141 140,140 200,143" fill="none" stroke="#f97316" stroke-width="2"/><circle cx="20" cy="142" r="3" fill="#f97316"/><circle cx="80" cy="141" r="3" fill="#f97316"/><circle cx="140" cy="140" r="3" fill="#f97316"/><circle cx="200" cy="143" r="3" fill="#f97316"/>
+                        <polyline points="20,75 80,76 140,74 200,75" fill="none" stroke="#16a34a" stroke-width="2"/><circle cx="20" cy="75" r="3" fill="#16a34a"/><circle cx="80" cy="76" r="3" fill="#16a34a"/><circle cx="140" cy="74" r="3" fill="#16a34a"/><circle cx="200" cy="75" r="3" fill="#16a34a"/>
+                        <polyline points="20,97 80,95 140,98 200,96" fill="none" stroke="#2563eb" stroke-width="2"/><circle cx="20" cy="97" r="3" fill="#2563eb"/><circle cx="80" cy="95" r="3" fill="#2563eb"/><circle cx="140" cy="98" r="3" fill="#2563eb"/><circle cx="200" cy="96" r="3" fill="#2563eb"/>
+                        <polyline points="20,158 80,157 140,156 200,158" fill="none" stroke="#dc2626" stroke-width="2"/><circle cx="20" cy="158" r="3" fill="#dc2626"/><circle cx="80" cy="157" r="3" fill="#dc2626"/><circle cx="140" cy="156" r="3" fill="#dc2626"/><circle cx="200" cy="158" r="3" fill="#dc2626"/>
+                    </g>
+                </svg>
+                <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-4 text-[11px]">
+                    <span class="inline-flex items-center gap-1"><span class="w-3 h-0.5 bg-orange-500"></span> Activity</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-3 h-0.5 bg-green-600"></span> USHCN</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-600"></span> PhysioNet</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-3 h-0.5 bg-red-600"></span> MIMIC-III</span>
+                </div>
+                <div class="mt-3 text-xs text-stone-500 text-center">Figure 5 — all sensitivity curves are essentially flat.</div>
+            </div>
+            <div class="order-1 lg:order-2">
+                <div class="eyebrow mb-2">C · Hyperparameter sensitivity</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Robust to hyperparameter choices</h3>
+                <p class="text-stone-600 leading-[1.7] text-sm">
+                    Grid sweep over hidden dim ∈ {32, 64}, layers ∈ {1, 2, 3}, heads ∈ {1, 2, 4, 8} on the four forecasting benchmarks. QuITE<sup>++</sup> remains generally robust across different hyperparameter choices.
+                </p>
+            </div>
+        </div>
+
+        <!-- D. Query Initialization -->
+        <div class="grid lg:grid-cols-5 gap-6 mb-7 items-center">
+            <div class="lg:col-span-2">
+                <div class="eyebrow mb-2">D · Query initialization</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Robust to initialization</h3>
+                <p class="text-stone-600 leading-[1.7] text-sm">QuITE remains robust across initialization schemes (Xavier / Uniform / Zero / Random), with only minor performance differences.</p>
+            </div>
+            <div class="lg:col-span-3 card p-2 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead><tr><th class="!text-left">Dataset</th><th>Metric</th><th>Xavier</th><th>Uniform</th><th>Zero</th><th>Random</th></tr></thead>
+                        <tbody>
+                            <tr><td class="row-label" rowspan="2">Activity <span class="text-[10px] font-normal text-stone-500">3000→1000</span></td><td>MSE</td><td>2.46</td><td>2.45</td><td>2.46</td><td>2.46</td></tr>
+                            <tr><td>MAE</td><td>3.00</td><td>2.99</td><td>3.01</td><td>2.92</td></tr>
+                            <tr><td class="row-label" rowspan="2">USHCN <span class="text-[10px] font-normal text-stone-500">24→12</span></td><td>MSE</td><td>4.83</td><td>4.86</td><td>4.87</td><td>4.81</td></tr>
+                            <tr><td>MAE</td><td>2.99</td><td>2.95</td><td>2.98</td><td>2.93</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- E. Computational efficiency -->
+        <div class="grid lg:grid-cols-5 gap-6 items-center">
+            <div class="lg:col-span-2">
+                <div class="eyebrow mb-2">E · Computational efficiency</div>
+                <h3 class="font-serif text-lg font-semibold text-stone-800 mb-2">Favorable accuracy–complexity trade-off</h3>
+                <p class="text-stone-600 leading-[1.7] text-sm">
+                    Computationally, QuITE-equipped models often used fewer parameters and generally reduced FLOPs compared to their base counterparts, indicating a favorable accuracy–complexity trade-off.
+                </p>
+            </div>
+            <div class="lg:col-span-3 card p-2 overflow-hidden">
+                <div class="px-4 pt-3 pb-2 text-xs text-stone-500 font-mono">PhysioNet 24h → 24h · excerpted from Tables E.1–E.2</div>
+                <div class="overflow-x-auto">
+                    <table class="results">
+                        <thead><tr><th class="!text-left">Backbone</th><th>Params</th><th>FLOPs</th><th>MSE</th></tr></thead>
+                        <tbody>
+                            <tr><td class="row-label">PatchTST</td><td>1.73M</td><td>75.2G</td><td>15.28</td></tr>
+                            <tr class="quite-row"><td class="row-label">+ QuITE</td><td>127K</td><td>10.6G</td><td>10.62</td></tr>
+                            <tr><td class="row-label">iTransformer</td><td>1.77M</td><td>107G</td><td>16.48</td></tr>
+                            <tr class="quite-row"><td class="row-label">+ QuITE</td><td>129K</td><td>13.8G</td><td>4.99</td></tr>
+                            <tr><td class="row-label">S-Mamba</td><td>2.52M</td><td>63.2G</td><td>6.93</td></tr>
+                            <tr class="quite-row"><td class="row-label">+ QuITE</td><td>190K</td><td>8.5G</td><td>5.11</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ============ CONCLUSION ============ -->
+<section class="py-16">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="eyebrow mb-2 text-center">Conclusion</div>
+        <h2 class="font-serif text-2xl md:text-[34px] font-semibold text-stone-800 leading-tight text-center mb-6">
+            Bridging irregular data and proven backbones.
+        </h2>
+        <p class="text-stone-700 leading-[1.75] text-[13.5px]">
+            <strong>QuITE</strong> offers a powerful and flexible <em>input-embedding</em> module that bridges the gap between <span class="accent-underline">irregular time series</span> data and existing, validated MTS backbones — enabling their effective application to challenging IMTS tasks without architectural modifications or artificial value generation. By aggregating irregular observations through learnable query tokens at the input stage, QuITE preserves backbone flexibility while avoiding the distortion of interpolation. Built on the same principle, <strong>QuITE<sup>++</sup></strong> extends this idea into a full hierarchical forecasting architecture and achieves the best result in 20 out of 24 settings across diverse IMTS benchmarks.
+        </p>
+    </div>
+</section>
+
+<!-- ============ CITATION ============ -->
+<section id="citation" class="py-16 bg-white border-t border-stone-200 scroll-mt-20">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="text-center mb-7">
+            <div class="eyebrow mb-2">Cite this work</div>
+            <h2 class="font-serif text-2xl md:text-[30px] font-semibold text-stone-800">BibTeX</h2>
+        </div>
+        <div class="codebox">
+            <button onclick="copyBibtex(event)" class="absolute top-4 right-4 text-stone-500 hover:text-stone-800 bg-stone-800 hover:bg-stone-700 p-2 rounded-md transition-colors border border-stone-700" title="Copy BibTeX">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+<pre id="bibtex" class="m-0"><span class="k">@inproceedings</span>{<span>lim2026quite</span>,
+  <span class="k">title</span>     = <span class="s">{QuITE: Query-Based Irregular Time Series Embedding}</span>,
+  <span class="k">author</span>    = <span class="s">{Lim, JungHoon}</span>,
+  <span class="k">booktitle</span> = <span class="s">{Proceedings of the 43rd International Conference on Machine Learning (ICML)}</span>,
+  <span class="k">year</span>      = <span class="s">{2026}</span>
+}</pre>
+        </div>
+        <div class="mt-6 text-center text-sm text-stone-500">
+            Correspondence: <a href="mailto:junghoon9502@gmail.com" class="underline hover:text-stone-700">junghoon9502@gmail.com</a>
+        </div>
+
+        <div class="mt-16 text-center">
+            <div class="eyebrow mb-2">Acknowledgements</div>
+            <p class="text-stone-600 leading-[1.7] text-sm max-w-3xl mx-auto">
+                We thank Daheen Kim and Seunghan Lee for insightful discussions and feedback. We are also grateful to Prof. Changhee Lee, Dr. Jaeho Kim, Seongjun Lee, and Seokhyun Lee of Korea University, and Prof. Kyungwoo Song of Yonsei University. Finally, we thank the anonymous ICML reviewers for their constructive comments.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-stone-200 py-10 bg-white">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-3 text-stone-500 text-sm">
+        <div class="flex items-center gap-2">
+            <span>© 2026 JungHoon Lim. ICML 2026.</span>
+        </div>
+        <div class="font-mono text-xs">
+            <a href="https://github.com/Meaningfull9502/QuITE" class="hover:text-stone-700 transition" target="_blank">github.com/Meaningfull9502/QuITE</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    lucide.createIcons();
+
+    // Top-level tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            const group = btn.parentElement;
+            group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-panel').forEach(p => {
+                p.classList.toggle('active', p.dataset.panel === tab);
+            });
+        });
+    });
+
+    // Sub-tabs (per-dataset inside vs-IMTS)
+    document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const sub = btn.dataset.sub;
+            const group = btn.parentElement;
+            const container = group.parentElement;
+            group.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            container.querySelectorAll('.sub-tab-panel').forEach(p => {
+                p.classList.toggle('active', p.dataset.subPanel === sub);
+            });
+        });
+    });
+
+    // Sticky nav active state
+    const sections = ['idea','method','results','analysis','citation'];
+    const links = document.querySelectorAll('.nav-link');
+    const setActive = () => {
+        const y = window.scrollY + 120;
+        let current = '';
+        for (const id of sections) {
+            const el = document.getElementById(id);
+            if (el && el.offsetTop <= y) current = id;
+        }
+        links.forEach(l => {
+            const href = l.getAttribute('href');
+            l.classList.toggle('active', href === '#' + current);
+        });
+    };
+    window.addEventListener('scroll', setActive, { passive: true });
+    setActive();
+
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('shown'); });
+    }, { rootMargin: '-50px 0px' });
+    document.querySelectorAll('section').forEach(s => { s.classList.add('reveal'); io.observe(s); });
+
+    // BibTeX copy
+    function copyBibtex(ev) {
+        const text = document.getElementById('bibtex').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = ev.currentTarget;
+            const original = btn.innerHTML;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            setTimeout(() => { btn.innerHTML = original; lucide.createIcons(); }, 1200);
+        });
+    }
+</script>
+</body>
+</html>
