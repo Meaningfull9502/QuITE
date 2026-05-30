@@ -1,16 +1,15 @@
 #!/bin/bash
 # Reproduce QuITE-equipped MTS backbones for classification (paper Table 3).
 #
-# Hyperparameters follow:
-#   - Paper §6.1 (Implementation Details): hidden=64; nhead is dataset/setup
-#     dependent (set to 2 here as a balanced default).
-#   - Paper Appendix B.1 (per-backbone layers):
-#       PatchTST=3, iTransformer=3, TimeXer=3, TMix=2, S-Mamba=2, PatchMixer=1.
-#   - Paper Table C.1(b): lr=1e-3, bs=64, patch/stride: P19=3.75, P12=6, PAM=10.
+# Hyperparameters follow the author-supplied per-backbone settings:
+#   hidden=64 (both standalone and QuITE-equipped), nhead=4 (4 attention heads
+#   for attention-based backbones), per-backbone nlayer from paper Appendix B.1
+#   (PatchTST=3, iTransformer=3, TimeXer=3, TMix=2, S-Mamba=2, PatchMixer=1).
+# Patch / stride / bs follow paper Table C.1(b): P19=3.75, P12=6, PAM=10, bs=64.
 
 GPU=${GPU:-0}
 HID=${HID:-64}
-NHEAD=${NHEAD:-2}
+NHEAD=${NHEAD:-4}
 MODELS=${MODELS:-"patchtst patchmixer tmix itransformer s_mamba timexer"}
 
 

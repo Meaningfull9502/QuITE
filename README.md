@@ -136,18 +136,39 @@ All runs use Adam, `lr=1e-3`, **patience=50**, **seeds {1..5}**, **MSE loss** (f
 
 ## 🧱 Supported Backbones
 
-QuITE-equipped models are standardized to `--hid_dim 64` and `--nhead 4` (forecasting) / `--nhead 2` (classification). The per-backbone `--nlayer` follows paper Appendix B.1 and is set automatically by the batch scripts.
+QuITE-equipped models are standardized to `--hid_dim 64` and `--nhead 4`. The per-backbone `--nlayer` follows paper Appendix B.1 and is set automatically by the batch scripts. `--nhead` is N/A for the non-attention backbones (PatchMixer / TMix / S-Mamba).
 
-| Family | `--model` | Token | `--nlayer` |
-|---|---|---|:---:|
-| **Patch** | `patchtst` | per-patch (Transformer) | 3 |
-| **Patch** | `patchmixer` | per-patch (CNN, single-layer) | 1 |
-| **Patch** | `tmix` | per-patch (MLP, TSMixer-style) | 2 |
-| **Variate** | `itransformer` | per-variable (inverted Transformer) | 3 |
-| **Variate** | `s_mamba` | per-variable (bidirectional Mamba) | 2 |
-| **Hybrid** | `timexer` | per-patch + per-variable exogenous | 3 |
+| Family | `--model` | Token | `--nlayer` | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` |
+|---|---|---|:---:|:---:|:---:|:---:|
+| **Patch** | `patchtst` | per-patch (Transformer) | 3 | 4 | 256 | **64** |
+| **Patch** | `patchmixer` | per-patch (CNN, single-layer) | 1 | — | 256 | **64** |
+| **Patch** | `tmix` | per-patch (MLP, TSMixer-style) | 2 | — | 128 | **64** |
+| **Variate** | `itransformer` | per-variable (inverted Transformer) | 3 | 4 | 512 | **64** |
+| **Variate** | `s_mamba` | per-variable (bidirectional Mamba) | 2 | — | 256 | **64** |
+| **Hybrid** | `timexer` | per-patch + per-variable exogenous | 3 | 4 | 256 | **64** |
 
-> **QuITE++.** Tuned per dataset via grid search over `--hid_dim ∈ {32, 64}`, `--nlayer ∈ {1, 2, 3}`, `--nhead ∈ {1, 2, 4, 8}` (paper §6.1).
+For **classification**, all six backbones run at `--hid_dim 64` in both standalone and QuITE-equipped form (paper Appendix B.1).
+
+> **TimeXer.** As the hybrid backbone, TimeXer instantiates two embeddings internally (`patch_embedding` + `variate_embedding`); the chosen `--mode` is applied to both.
+
+### QuITE++ per-(dataset, horizon) settings
+
+QuITE++ is tuned per dataset via grid search over `--hid_dim ∈ {32, 64}`, `--nlayer ∈ {1, 2, 3}`, `--nhead ∈ {1, 2, 4, 8}` (paper §6.1). The selected values used to produce paper Table 4 are baked into `jobs/run_quite_plus.sh`:
+
+| Dataset | Horizon | `--hid_dim` | `--nlayer` | `--nhead` |
+|---|---|:---:|:---:|:---:|
+| **Activity**  | 3000 → 1000 | 64 | 3 | 8 |
+| **Activity**  | 2000 → 2000 | 64 | 3 | 4 |
+| **Activity**  | 1000 → 3000 | 64 | 2 | 2 |
+| **USHCN**     | 24 → 1  | 32 | 1 | 2 |
+| **USHCN**     | 24 → 6  | 32 | 1 | 4 |
+| **USHCN**     | 24 → 12 | 64 | 2 | 2 |
+| **PhysioNet** | 12 → 36 | 64 | 3 | 2 |
+| **PhysioNet** | 24 → 24 | 64 | 2 | 4 |
+| **PhysioNet** | 36 → 12 | 64 | 1 | 4 |
+| **MIMIC-III** | 12 → 36 | 32 | 3 | 4 |
+| **MIMIC-III** | 24 → 24 | 32 | 3 | 4 |
+| **MIMIC-III** | 36 → 12 | 32 | 1 | 4 |
 
 ---
 
