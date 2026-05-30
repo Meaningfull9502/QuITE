@@ -11,7 +11,7 @@
 
 A plug-and-play **input-embedding** module that lets any standard MTS backbone — PatchTST, PatchMixer, TMix, iTransformer, S-Mamba, TimeXer — handle **Irregular Multivariate Time Series (IMTS)** without architectural changes or artificial value generation.
 
-📄 [**Paper (OpenReview)**](https://openreview.net/forum?id=ILQGHFvEoo) · 💻 [**Code**](https://github.com/Meaningfull9502/QuITE) · 📜 [**Citation**](#-citation)
+📄 [**Paper (arXiv)**](https://arxiv.org/abs/2605.28166) · 📑 [**OpenReview**](https://openreview.net/forum?id=ILQGHFvEoo) · 💻 [**Code**](https://github.com/Meaningfull9502/QuITE) · 📜 [**Citation**](#-citation)
 
 </div>
 
@@ -66,12 +66,24 @@ Across **7 benchmarks × 6 MTS backbones**, plugging QuITE in yields average rel
 
 We use **4 forecasting** + **3 classification** benchmarks, following [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN) for forecasting and [Raindrop](https://github.com/mims-harvard/Raindrop) for classification preprocessing. Place all data under `../data/` (sibling of this repository).
 
-| Forecasting | # Samples | # Vars | Missing |   | Classification | # Samples | # Vars | # Classes | Missing |
-|---|---:|---:|---:|---|---|---:|---:|---:|---:|
-| Human Activity | 5,400 | 12 | 75.0 % |   | P19 | 38,803 | 34 | 2 | 94.9 % |
-| USHCN          | 26,736 | 5 | 77.9 % |   | P12 | 11,988 | 36 | 2 | 88.4 % |
-| PhysioNet      | 12,000 | 36 | 88.4 % |   | PAM | 5,333 | 17 | 8 | 60.0 % |
-| MIMIC-III      | 23,457 | 96 | 96.7 % |   |     |        |    |   |        |
+### Forecasting (paper Appendix A.1)
+
+| Dataset | # Samples | # Vars | Avg. Length | Missing |
+|---|---:|---:|---:|---:|
+| Human Activity | 5,400  | 12 | 120 | 75.0 % |
+| USHCN          | 26,736 |  5 | 163 | 77.9 % |
+| PhysioNet      | 12,000 | 36 |  74 | 88.4 % |
+| MIMIC-III      | 23,457 | 96 |  46 | 96.7 % |
+
+### Classification (paper Appendix A.2)
+
+| Dataset | # Samples | # Vars | # Classes | Missing |
+|---|---:|---:|---:|---:|
+| P19 | 38,803 | 34 | 2 (binary)   | 94.9 % |
+| P12 | 11,988 | 36 | 2 (binary)   | 88.4 % |
+| PAM | 5,333  | 17 | 8 (activity) | 60.0 % |
+
+### Acquisition
 
 - **PhysioNet / Human Activity** — auto-downloaded by the code.
 - **USHCN** — use the preprocessed `small_chunked_sporadic.csv` from [GRU-ODE-Bayes](https://github.com/edebrouwer/gru_ode_bayes).
@@ -193,11 +205,13 @@ QuITE++ is tuned per dataset via grid search over `--hid_dim ∈ {32, 64}`, `--n
 
 ```bibtex
 @inproceedings{lim2026quite,
-  title     = {Qu{ITE}: Query-based Irregular Time-series Embedding},
-  author    = {Lim, JungHoon},
-  booktitle = {Forty-third International Conference on Machine Learning},
-  year      = {2026},
-  url       = {https://openreview.net/forum?id=ILQGHFvEoo}
+  title         = {Qu{ITE}: Query-based Irregular Time-series Embedding},
+  author        = {Lim, JungHoon},
+  booktitle     = {Forty-third International Conference on Machine Learning},
+  year          = {2026},
+  url           = {https://openreview.net/forum?id=ILQGHFvEoo},
+  eprint        = {2605.28166},
+  archivePrefix = {arXiv}
 }
 ```
 
