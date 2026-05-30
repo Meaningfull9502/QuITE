@@ -5,13 +5,13 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**Official PyTorch implementation** of *QuITE: Query-Based Irregular Time Series Embedding* (ICML 2026) — [arXiv](https://arxiv.org/abs/2605.28166), [OpenReview](https://openreview.net/forum?id=ILQGHFvEoo).
+**Official PyTorch implementation** of *QuITE: Query-Based Irregular Time Series Embedding* (ICML 2026) — 📄 [arXiv](https://arxiv.org/abs/2605.28166), 📑 [OpenReview](https://openreview.net/forum?id=ILQGHFvEoo).
 
 A plug-and-play **input-embedding** module that lets any standard MTS backbone — PatchTST, PatchMixer, TMix, iTransformer, S-Mamba, TimeXer — handle **Irregular Multivariate Time Series (IMTS)** without architectural changes or artificial value generation.
 
 ---
 
-## News
+## 🔥 News
 
 - **2026-05-01** — *QuITE* is accepted by **ICML 2026**.
 
@@ -64,7 +64,7 @@ Across **7 benchmarks** and **6 MTS backbones**, plugging QuITE in yields averag
 
 ---
 
-## Datasets
+## 📊 Datasets
 
 We use **4 forecasting** + **3 classification** benchmarks, following [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN) for forecasting and [Raindrop](https://github.com/mims-harvard/Raindrop) for classification preprocessing. Place all data under `../data/` (sibling of this repository).
 
@@ -94,7 +94,7 @@ We use **4 forecasting** + **3 classification** benchmarks, following [t-PatchGN
 
 ---
 
-## Installation
+## ⚙️ Installation
 
 Tested on **Python 3.10+** and **PyTorch 2.0+**.
 
@@ -107,7 +107,7 @@ pip install mamba-ssm   # only required for the S-Mamba backbone
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # QuITE + iTransformer on PhysioNet (forecasting, 24 -> 24)
@@ -136,7 +136,7 @@ python train_classification.py --dataset P19 \
 
 ---
 
-## Reproducing Paper Results
+## 🔁 Reproducing Paper Results
 
 ```bash
 bash jobs/run_forecasting.sh      # Table 2  -- 6 backbones x 12 (dataset, horizon) x 5 seeds
@@ -163,7 +163,7 @@ Supported backbones (selectable via `--model`): `patchtst`, `patchmixer`, `tmix`
 
 ---
 
-## Citation
+## 📖 Citation
 
 ```bibtex
 @inproceedings{lim2026quite,
@@ -179,6 +179,6 @@ Supported backbones (selectable via `--model`): `patchtst`, `patchmixer`, `tmix`
 
 ---
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
 Built on top of [t-PatchGNN](https://github.com/usail-hkust/t-PatchGNN), [Raindrop](https://github.com/mims-harvard/Raindrop), [Time-Series-Library](https://github.com/thuml/Time-Series-Library), [S-D-Mamba](https://github.com/wzhwzhwzh0921/S-D-Mamba), [Hi-Patch](https://github.com/qianlima-lab/Hi-Patch), and [PyOmniTS](https://github.com/Ladbaby/PyOmniTS).
