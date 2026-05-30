@@ -59,7 +59,8 @@ parser.add_argument('--mode', type=str, default='quite',
 parser.add_argument('--irr_emb', action='store_true',
                     help='Use QuITE-style query-based embedding (paper main method)')
 parser.add_argument('-hd', '--hid_dim', type=int, default=64)
-parser.add_argument('--nhead', type=int, default=1)
+parser.add_argument('--nhead', type=int, default=4,
+                    help='Paper §6.1 standardizes QuITE-equipped backbones to 4 heads')
 parser.add_argument('--nlayer', type=int, default=1)
 parser.add_argument('-ps', '--patch_size', type=float, default=24)
 parser.add_argument('--stride', type=float, default=24)

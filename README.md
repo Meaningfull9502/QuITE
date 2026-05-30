@@ -136,7 +136,11 @@ All runs use Adam, `lr=1e-3`, **patience=50**, **seeds {1..5}**, **MSE loss** (f
 
 ## 🧱 Supported Backbones
 
-QuITE-equipped models are standardized to `--hid_dim 64` and `--nhead 4`. The per-backbone `--nlayer` follows paper Appendix B.1 and is set automatically by the batch scripts. `--nhead` is N/A for the non-attention backbones (PatchMixer / TMix / S-Mamba).
+> 🔑 **Key rule.** When QuITE is plugged into any of the six MTS backbones, we fix
+> `--hid_dim 64` and `--nhead 4` (paper §6.1). This isolates the gains to QuITE
+> itself rather than to extra backbone capacity. Per-backbone `--nlayer` follows
+> paper Appendix B.1 and is set automatically by `jobs/*.sh`. `--nhead` is N/A
+> for the non-attention backbones (PatchMixer / TMix / S-Mamba).
 
 | Family | `--model` | Token | `--nlayer` | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` |
 |---|---|---|:---:|:---:|:---:|:---:|
