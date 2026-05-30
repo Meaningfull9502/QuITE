@@ -1,5 +1,3 @@
-<div align="center">
-
 # [ICML 2026] QuITE: Query-Based Irregular Time Series Embedding
 
 [![Conference](https://img.shields.io/badge/ICML-2026-1f6feb?style=flat-square)](https://icml.cc/Conferences/2026)
@@ -7,13 +5,9 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**Official PyTorch implementation** of *QuITE: Query-Based Irregular Time Series Embedding* (ICML 2026).
+**Official PyTorch implementation** of *QuITE: Query-Based Irregular Time Series Embedding* (ICML 2026) — [arXiv](https://arxiv.org/abs/2605.28166), [OpenReview](https://openreview.net/forum?id=ILQGHFvEoo).
 
 A plug-and-play **input-embedding** module that lets any standard MTS backbone — PatchTST, PatchMixer, TMix, iTransformer, S-Mamba, TimeXer — handle **Irregular Multivariate Time Series (IMTS)** without architectural changes or artificial value generation.
-
-[Paper (arXiv)](https://arxiv.org/abs/2605.28166) | [OpenReview](https://openreview.net/forum?id=ILQGHFvEoo) | [Code](https://github.com/Meaningfull9502/QuITE) | [Citation](#citation)
-
-</div>
 
 ---
 
@@ -25,7 +19,15 @@ A plug-and-play **input-embedding** module that lets any standard MTS backbone �
 
 ## Overview
 
-Irregular Multivariate Time Series (IMTS) are common in healthcare, industrial monitoring, and climatology, yet they break the uniform-sampling assumption baked into standard MTS embeddings. We address this at the **input-embedding** stage.
+Irregular Multivariate Time Series (IMTS) are common in healthcare, industrial monitoring, and climatology, yet they break the uniform-sampling assumption baked into standard MTS embeddings. Existing methods either redesign the architecture (giving up the rich MTS-backbone library) or interpolate IMTS onto a regular grid (introducing artificial values). QuITE attacks the problem at the **input-embedding** stage instead, getting the best of both:
+
+**Table 1.** Comparison of approaches for IMTS modeling (paper Table 1).
+
+| Approach                              | No Artificial Value | Model Flexibility |
+| ------------------------------------- | :-----------------: | :---------------: |
+| Architecture-based                    |         Yes         |        No         |
+| Data-based                            |         No          |        Yes        |
+| **Input-embedding-based (Ours)**      |       **Yes**       |      **Yes**      |
 
 - **QuITE** *(paper §4)* — a plug-and-play module. A small set of learnable **query tokens** aggregates irregular observations through a single masked self-attention layer.
 - **QuITE++** *(paper §5)* — a hierarchical extension: query-based patch embedding -> patch-level self-attention -> variable-level self-attention -> cross-attention decoder over future-time queries.
@@ -144,27 +146,7 @@ bash jobs/run_classification.sh   # Table 3  -- 6 backbones x 3 datasets
 
 All runs use Adam, `lr = 1e-3`, **patience = 50**, **seeds {1, 2, 3, 4, 5}**, **MSE loss** (forecasting), **Cross-Entropy loss** (classification) — paper §6.1.
 
----
-
-## Supported Backbones
-
-> **Key rule.** When QuITE is plugged into any of the six MTS backbones, we fix `--hid_dim 64` and `--nhead 4` (paper §6.1) so that the gains come from QuITE itself rather than added backbone capacity.
-> Per-backbone `--nlayer` follows paper Appendix B.1 and is set automatically by `jobs/*.sh`. `--nhead` is not applicable to the non-attention backbones (PatchMixer, TMix, S-Mamba).
-
-| Family  | `--model`      | Token type                                  | `--nlayer` | `--nhead` | Standalone `--hid_dim` | QuITE-equipped `--hid_dim` |
-| ------- | -------------- | ------------------------------------------- | :--------: | :-------: | :--------------------: | :------------------------: |
-| Patch   | `patchtst`     | per-patch (Transformer)                     |     3      |     4     |          256           |           **64**           |
-| Patch   | `patchmixer`   | per-patch (CNN, single-layer)               |     1      |     -     |          256           |           **64**           |
-| Patch   | `tmix`         | per-patch (MLP, TSMixer-style)              |     2      |     -     |          128           |           **64**           |
-| Variate | `itransformer` | per-variable (inverted Transformer)         |     3      |     4     |          512           |           **64**           |
-| Variate | `s_mamba`      | per-variable (bidirectional Mamba)          |     2      |     -     |          256           |           **64**           |
-| Hybrid  | `timexer`      | per-patch + per-variable exogenous          |     3      |     4     |          256           |           **64**           |
-
-For **classification**, all six backbones run at `--hid_dim 64` in both standalone and QuITE-equipped form (paper Appendix B.1).
-
-> **TimeXer.** As the hybrid backbone, TimeXer instantiates two embeddings internally (`patch_embedding` and `variate_embedding`); the chosen `--mode` is applied to both.
-
-> **QuITE++.** Tuned per dataset via grid search over `--hid_dim` in `{32, 64}`, `--nlayer` in `{1, 2, 3}`, `--nhead` in `{1, 2, 4, 8}` (paper §6.1). The selected values that produce paper Table 4 are baked into `jobs/run_quite_plus.sh`.
+Supported backbones (selectable via `--model`): `patchtst`, `patchmixer`, `tmix`, `itransformer`, `s_mamba`, `timexer`. The per-backbone `--hid_dim`, `--nhead`, and `--nlayer` are configured automatically by the scripts in `jobs/`.
 
 ---
 
