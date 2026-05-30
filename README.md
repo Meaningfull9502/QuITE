@@ -25,9 +25,9 @@ Irregular Multivariate Time Series (IMTS) are common in healthcare, industrial m
 
 | Approach                              | No Artificial Value | Model Flexibility |
 | ------------------------------------- | :-----------------: | :---------------: |
-| Architecture-based                    |         Yes         |        No         |
-| Data-based                            |         No          |        Yes        |
-| **Input-embedding-based (Ours)**      |       **Yes**       |      **Yes**      |
+| Architecture-based                    |         ✅          |        ❌         |
+| Data-based                            |         ❌          |        ✅         |
+| **Input-embedding-based (Ours)**      |         ✅          |        ✅         |
 
 - **QuITE** *(paper §4)* — a plug-and-play module. A small set of learnable **query tokens** aggregates irregular observations through a single masked self-attention layer.
 - **QuITE++** *(paper §5)* — a hierarchical extension: query-based patch embedding -> patch-level self-attention -> variable-level self-attention -> cross-attention decoder over future-time queries.
@@ -154,12 +154,12 @@ Supported backbones (selectable via `--model`): `patchtst`, `patchmixer`, `tmix`
 
 | `--mode`   | Meaning                                                       | Paper    | Use with `--irr_emb`? |
 | ---------- | ------------------------------------------------------------- | -------- | :-------------------: |
-| **`quite`**| QuITE -- query-based irregular embedding (paper main method)  | Eq. 5-13 |          Yes          |
-| `mean`     | Mean Pooling baseline                                         | Table 5  |          Yes          |
-| `mtand`    | mTAND attention baseline                                      | Table 5  |          Yes          |
-| `add`      | value embedding + time embedding                              | Table 5  |          No           |
-| `concat`   | value embedding concatenated with time embedding              | Table 5  |          No           |
-| `False`    | vanilla backbone embedding (no time conditioning)             | --       |          No           |
+| **`quite`**| QuITE -- query-based irregular embedding (paper main method)  | Eq. 5-13 |          ✅           |
+| `mean`     | Mean Pooling baseline                                         | Table 5  |          ✅           |
+| `mtand`    | mTAND attention baseline                                      | Table 5  |          ✅           |
+| `add`      | value embedding + time embedding                              | Table 5  |          ❌           |
+| `concat`   | value embedding concatenated with time embedding              | Table 5  |          ❌           |
+| `False`    | vanilla backbone embedding (no time conditioning)             | --       |          ❌           |
 
 ---
 
